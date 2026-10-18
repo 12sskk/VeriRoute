@@ -280,7 +280,7 @@
           </div>
 
           <p class="text-xs text-[#71767b] leading-relaxed">
-            The router extracts an 8-dimensional feature vector $\mathbf{x}_t$, evaluates LinUCB upper confidence bounds across model arms, and minimizes both latency and token costs.
+            The router extracts an 8-dimensional feature vector, evaluates LinUCB upper confidence bounds across model arms, and minimizes both latency and token costs.
           </p>
 
           <!-- Prompt Preset Pills -->
@@ -408,9 +408,9 @@ Click "Test loop breaker" to simulate an agent calling `search_codebase({"query"
         <!-- Bandit Parameters -->
         <div class="p-6 rounded-2xl bg-[#16181c] border border-[#2f3336] space-y-4">
           <div class="border-b border-[#2f3336] pb-3">
-            <h2 class="text-sm font-bold text-white tracking-tight">Learned Parameters ($\hat{\boldsymbol{\theta}}_a = \mathbf{A}_a^{-1}\mathbf{b}_a$)</h2>
+            <h2 class="text-sm font-bold text-white tracking-tight">Learned Arm Parameters (θ̂ = A⁻¹b)</h2>
             <p class="text-xs text-[#71767b] mt-0.5">
-              Online covariance matrices ($\mathbf{A}_a \in \mathbb{R}^{8 \times 8}$) updated across requests in SQLite.
+              Online 8×8 covariance matrices updated across requests in SQLite.
             </p>
           </div>
           <div id="bandit-arms-cards" class="space-y-3 font-mono text-xs"></div>
@@ -488,19 +488,49 @@ Click "Test loop breaker" to simulate an agent calling `search_codebase({"query"
         document.getElementById('kpi-overhead').textContent = m.gateway_overhead_p95_ms.toFixed(2) + ' ms';
         document.getElementById('kpi-loops').textContent = data.loop_breaker.total_loops_broken;
 
+        const featureLabels = {
+          bias: 'Bias',
+          simplicity_signal: 'Short Q&A',
+          length_log_norm: 'Token length',
+          code_density: 'Code density',
+          reasoning_math_depth: 'Reasoning depth',
+          systems_arch_depth: 'Systems arch',
+          strict_constraint_signal: 'Strict format',
+          conversation_depth: 'Thread depth'
+        };
+
         // Render Bandit Arms in Tab 3
         const armsContainer = document.getElementById('bandit-arms-cards');
         armsContainer.innerHTML = '';
         Object.entries(data.bandit.arms).forEach(([armId, info]) => {
           const card = document.createElement('div');
-          card.className = 'p-3.5 rounded-xl bg-black border border-[#2f3336] space-y-2';
+          card.className = 'p-4 rounded-xl bg-black border border-[#2f3336] space-y-3';
+          
+          const featureChips = Object.entries(info.learned_theta).map(([k, v]) => {
+            const label = featureLabels[k] || k;
+            const num = Number(v);
+            const isPos = num >= 0;
+            const sign = isPos ? '+' : '';
+            const valStr = sign + num.toFixed(3);
+            return `
+              <div class="p-2 rounded-lg bg-[#16181c] border border-[#2f3336] flex items-center justify-between text-xs">
+                <span class="text-[#71767b] text-[11px] truncate mr-2">${label}</span>
+                <span class="mono font-semibold ${isPos ? 'text-white' : 'text-[#71767b]'} shrink-0">${valStr}</span>
+              </div>
+            `;
+          }).join('');
+
           card.innerHTML = `
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-white">${info.display_name}</span>
-              <span class="text-[#71767b]">Pulls: <strong class="text-white">${info.pulls}</strong> | E[r]: <strong class="text-white">${info.avg_reward}</strong> | TTFT: ${info.ema_ttft_ms}ms</span>
+            <div class="flex flex-wrap justify-between items-center text-xs gap-2 border-b border-[#2f3336] pb-2.5">
+              <span class="font-bold text-white text-sm">${info.display_name}</span>
+              <div class="flex items-center gap-3 text-[#71767b] font-mono text-xs">
+                <span>Pulls: <strong class="text-white">${info.pulls}</strong></span>
+                <span>E[r]: <strong class="text-white">${info.avg_reward}</strong></span>
+                <span>TTFT: <strong class="text-white">${info.ema_ttft_ms}ms</strong></span>
+              </div>
             </div>
-            <div class="text-[11px] text-[#71767b] bg-[#16181c] p-2 rounded-lg border border-[#2f3336] overflow-x-auto">
-              ${JSON.stringify(info.learned_theta, null, 2)}
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
+              ${featureChips}
             </div>
           `;
           armsContainer.appendChild(card);
@@ -689,12 +719,16 @@ Click "Test loop breaker" to simulate an agent calling `search_codebase({"query"
         })
       });
       const data = await res.json();
-      btn.textContent = 'Test loop breaker';
-      document.getElementById('loop-demo-output').textContent =
-        `Loop intercepted: ${data.veriroute.loop_guard.loop_detected}\n` +
-        `Directive: ${data.veriroute.loop_guard.action_taken}\n` +
-        `Escalated model: ${data.veriroute.router.selected_model} (${data.veriroute.router.routing_policy})\n\n` +
-        `Output:\n${data.choices[0].message.content}`;
+      document.getElementById('loop-demo-output').innerHTML = `
+        <div class="space-y-3 font-sans">
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <span class="px-2.5 py-1 rounded-full border border-white bg-white text-black font-semibold">Loop intercepted: ${data.veriroute.loop_guard.loop_detected}</span>
+            <span class="px-2.5 py-1 rounded-full border border-[#2f3336] bg-[#16181c] text-white">Escalated to ${data.veriroute.router.selected_model}</span>
+          </div>
+          <div class="text-xs text-[#71767b] font-mono">Action: ${data.veriroute.loop_guard.action_taken}</div>
+          <div class="p-3 rounded-lg bg-[#16181c] border border-[#2f3336] text-xs text-white leading-relaxed font-mono whitespace-pre-wrap">${data.choices[0].message.content}</div>
+        </div>
+      `;
       refreshStats();
     }
 
