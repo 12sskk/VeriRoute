@@ -1,703 +1,476 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VeriRoute // Robotic LLM Gateway &amp; LinUCB Dispatch Core</title>
+  <title>VeriRoute — Intelligent LLM Gateway</title>
   
-  <!-- JetBrains Mono & Inter fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root {
-      --bg: #f4f5f8;
-      --bg-soft: #eaedf2;
-      --panel-bg: #ffffff;
-      --panel-header: #f8fafc;
-      --border: #cbd5e1;
-      --border-strong: #94a3b8;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --blue: #0284c7;
-      --green: #059669;
-      --amber: #d97706;
-      --red: #dc2626;
-      --cyan: #0891b2;
-      --purple: #7c3aed;
-    }
-
-    * { box-sizing: border-box; }
-
     body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      margin: 0;
-      padding: 0;
-      /* Robotic laboratory blueprint grid */
-      background-image: 
-        linear-gradient(rgba(203, 213, 225, 0.45) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(203, 213, 225, 0.45) 1px, transparent 1px);
-      background-size: 24px 24px;
-      background-attachment: fixed;
+      background-color: #000000;
+      color: #f7f9f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
+    /* Twitter / GitHub style clean borders */
+    .border-subtle {
+      border-color: #2f3336;
+    }
+
+    /* Monospace for code & numbers */
     .mono {
-      font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
-      font-feature-settings: "tnum" 1, "zero" 1;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-feature-settings: "tnum" 1;
     }
 
-    /* ---------- CyberArena Terminal Panel Architecture ---------- */
-    .terminal-panel {
-      border: 1px solid var(--border);
-      background: var(--panel-bg);
-      border-radius: 3px;
-      margin-bottom: 1.25rem;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 6px 16px rgba(15, 23, 42, 0.02);
-      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    /* Clean Twitter-like Tab underline */
+    .tab-item {
+      position: relative;
+      color: #71767b;
+      font-weight: 500;
+      transition: color 0.15s ease;
     }
-    .terminal-panel:hover {
-      border-color: var(--border-strong);
+    .tab-item:hover {
+      color: #e7e9ea;
     }
-
-    .terminal-header {
-      border-bottom: 1px solid var(--border);
-      background: var(--panel-header);
-      padding: 0.55rem 0.95rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .terminal-body {
-      padding: 1rem 1.15rem;
-    }
-
-    /* Hardware Terminal Status Dots */
-    .dot {
-      display: inline-block;
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      margin-left: 4px;
-    }
-    .dot.red { background: #ef4444; border: 1px solid #dc2626; }
-    .dot.amber { background: #f59e0b; border: 1px solid #d97706; }
-    .dot.green { background: #10b981; border: 1px solid #059669; }
-
-    /* ---------- Navigation & Buttons ---------- */
-    .nav-bar {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-      padding: 0.65rem 1.5rem;
-      background: #ffffff;
-      border-bottom: 1px solid var(--border);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-    }
-
-    .btn {
-      font-family: 'JetBrains Mono', monospace;
-      background: var(--text);
+    .tab-item.active {
       color: #ffffff;
-      border: 1px solid var(--text);
-      padding: 0.45rem 0.9rem;
-      cursor: pointer;
       font-weight: 700;
-      font-size: 0.78rem;
-      letter-spacing: 0.04em;
-      border-radius: 2px;
-      transition: all 0.15s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
     }
-    .btn:hover:not(:disabled) {
-      background: #1e293b;
-      border-color: #1e293b;
-      transform: translateY(-1px);
-    }
-    .btn:active:not(:disabled) { transform: translateY(1px); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .btn-blue {
-      background: var(--blue);
-      border-color: var(--blue);
-      color: #ffffff;
-    }
-    .btn-blue:hover:not(:disabled) {
-      background: #0369a1;
-      border-color: #0369a1;
+    .tab-item.active::after {
+      content: "";
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: #ffffff;
+      border-radius: 9999px;
     }
 
-    .btn-ghost {
-      background: #ffffff;
-      border: 1px solid var(--border);
-      color: var(--text);
+    /* Clean progress bar */
+    .bar-fill {
+      transition: width 0.3s ease;
     }
-    .btn-ghost:hover:not(:disabled) {
-      background: #f1f5f9;
-      border-color: var(--border-strong);
-    }
-
-    .btn-ghost-active {
-      background: var(--text);
-      color: #ffffff;
-      border-color: var(--text);
-    }
-
-    /* Badges */
-    .tech-badge {
-      font-size: 0.72rem;
-      padding: 0.15rem 0.5rem;
-      border: 1px solid;
-      border-radius: 2px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      font-weight: 700;
-      display: inline-block;
-    }
-    .badge-green { color: var(--green); border-color: var(--green); background: rgba(5, 150, 105, 0.08); }
-    .badge-amber { color: var(--amber); border-color: var(--amber); background: rgba(217, 119, 6, 0.08); }
-    .badge-red   { color: var(--red);   border-color: var(--red);   background: rgba(220, 38, 38, 0.08); }
-    .badge-blue  { color: var(--blue);  border-color: var(--blue);  background: rgba(2, 132, 199, 0.08); }
-    .badge-slate { color: #475569;     border-color: #cbd5e1;     background: #f8fafc; }
-
-    /* Inputs */
-    .field {
-      width: 100%;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.5rem 0.75rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      border-radius: 2px;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-    .field:focus {
-      outline: none;
-      border-color: var(--blue);
-      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
-    }
-
-    .progress-bar-container {
-      height: 8px;
-      background: #e2e8f0;
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      transition: width 0.4s ease;
-    }
-
-    .tab-view { display: block; }
-    .tab-view.hidden { display: none; }
   </style>
 </head>
-<body>
+<body class="min-h-screen bg-black text-[#f7f9f9] antialiased">
 
-  <!-- CyberArena Robotic Navigation Bar -->
-  <nav class="nav-bar mono">
-    <div onclick="showTab('tab-cache')" style="cursor: pointer; font-weight: 700; letter-spacing: 0.1em; font-size: 1rem; color: var(--text); display: flex; align-items: center; gap: 0.6rem;">
-      <span>VERI<span style="color: var(--blue);">ROUTE</span></span>
-      <span class="tech-badge badge-slate" id="nav-mode-badge">ROBOTIC GATEWAY // VEC: R^128</span>
-    </div>
-
-    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-      <button id="nav-btn-cache" onclick="showTab('tab-cache')" class="btn btn-ghost btn-ghost-active">
-        [01] CACHE_RADAR
-      </button>
-      <button id="nav-btn-gateway" onclick="showTab('tab-gateway')" class="btn btn-ghost">
-        [02] LINUCB_DISPATCH
-      </button>
-      <button id="nav-btn-bandit" onclick="showTab('tab-bandit')" class="btn btn-ghost">
-        [03] MATRIX_STATE
-      </button>
-      <button id="nav-btn-benchmarks" onclick="showTab('tab-benchmarks')" class="btn btn-ghost">
-        [04] BENCHMARK_SUITE
-      </button>
-
-      <span class="tech-badge badge-amber" id="nav-p95-badge">P95: 0.75ms</span>
-
-      <button onclick="runSimulationBatch()" id="btn-batch-sim" class="btn btn-blue">
-        ⚡ SIMULATE_32
-      </button>
-      <button onclick="resetGateway()" class="btn btn-ghost">
-        RESET
-      </button>
-    </div>
-  </nav>
-
-  <!-- Main Container -->
-  <div style="max-width: 1240px; margin: 0 auto; padding: 1.5rem 1.25rem;">
-
-    <!-- OPERATIVE_STATUS TerminalPanel (Just like CyberArena) -->
-    <div class="terminal-panel">
-      <div class="terminal-header">
-        <span class="mono" style="color: var(--blue); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.05em;">
-          ROBOTIC_OPERATIVE_STATUS // REAL-TIME DISPATCH TELEMETRY
-        </span>
-        <div style="flex: 1;"></div>
-        <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
+  <!-- Top Navigation (Twitter / GitHub Navbar style) -->
+  <header class="sticky top-0 z-50 bg-black/90 backdrop-blur border-b border-[#2f3336]">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+      
+      <!-- Brand Logo & Name -->
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center gap-2 text-white font-bold tracking-tight text-lg hover:opacity-80 transition">
+          <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+          </svg>
+          <span>VeriRoute</span>
+        </a>
+        <span class="text-xs px-2 py-0.5 rounded-full border border-[#2f3336] text-[#71767b] font-mono">v1.0</span>
       </div>
-      <div class="terminal-body mono">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1.25rem; align-items: center;">
-          
-          <div>
-            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">REQUESTS_INGRESS</div>
-            <div style="font-size: 1.6rem; font-weight: 700; color: var(--text);" id="kpi-requests">0</div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">HTTP / SSE CHANNELS</div>
-          </div>
 
-          <div>
-            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">COST_MITIGATION</div>
-            <div style="font-size: 1.6rem; font-weight: 700; color: var(--green);" id="kpi-savings-pct">0.0%</div>
-            <div style="font-size: 0.72rem; color: var(--green);" id="kpi-savings-usd">$0.0000 SAVED</div>
-          </div>
-
-          <div>
-            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">VERIFIED_CACHE_HIT</div>
-            <div style="font-size: 1.6rem; font-weight: 700; color: var(--blue);" id="kpi-cache-rate">0.0%</div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);" id="kpi-cache-entries">0 ENTRIES ACTIVE</div>
-          </div>
-
-          <div>
-            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">ADVERSARIAL_FPS_BLOCKED</div>
-            <div style="font-size: 1.6rem; font-weight: 700; color: var(--amber);" id="kpi-fp-blocked">0</div>
-            <div style="font-size: 0.72rem; color: var(--amber);">CAUGHT BY STAGE-2 NLI</div>
-          </div>
-
-          <div>
-            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">GATEWAY_P95_OVERHEAD</div>
-            <div style="font-size: 1.6rem; font-weight: 700; color: #4338ca;" id="kpi-overhead">0.0 ms</div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">BI-ENC + LINUCB MATH</div>
-          </div>
-
-          <div>
-            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">LOOPS_QUARANTINED</div>
-            <div style="font-size: 1.6rem; font-weight: 700; color: var(--red);" id="kpi-loops">0</div>
-            <div style="font-size: 0.72rem; color: var(--red);">STATEFUL INTERLOCK</div>
-          </div>
-
-        </div>
+      <!-- Action Buttons (Twitter pill style) -->
+      <div class="flex items-center gap-2 text-sm font-medium">
+        <button onclick="runSimulationBatch()" id="btn-batch-sim" class="px-4 py-1.5 rounded-full bg-white text-black font-semibold hover:bg-neutral-200 transition active:scale-95 text-xs">
+          Simulate 32 requests
+        </button>
+        <button onclick="resetGateway()" class="px-3.5 py-1.5 rounded-full border border-[#536471] text-white hover:bg-white/10 transition active:scale-95 text-xs">
+          Reset
+        </button>
+        <a href="/docs" target="_blank" class="px-3 py-1.5 rounded-full border border-[#2f3336] text-[#71767b] hover:text-white hover:bg-white/5 transition text-xs">
+          API docs ↗
+        </a>
       </div>
     </div>
+  </header>
 
-    <!-- ======================================================== -->
-    <!-- TAB 1: ADVERSARIAL CACHE RADAR                          -->
-    <!-- ======================================================== -->
-    <div id="tab-cache" class="tab-view">
-      <div class="terminal-panel">
-        <div class="terminal-header">
-          <span class="mono" style="color: var(--blue); font-weight: 700; font-size: 0.85rem;">
-            [MODULE_01] // ADVERSARIAL CACHE RADAR (STAGE-1 BI-ENCODER vs STAGE-2 NLI CROSS-ENCODER)
-          </span>
-          <div style="flex: 1;"></div>
-          <span class="tech-badge badge-blue">COSINE_THRESHOLD: 0.80</span>
-          <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
-        </div>
-        <div class="terminal-body mono">
-          
-          <p style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-top: 0; line-height: 1.5;">
-            Standard semantic vector caches (e.g. vanilla GPTCache) rely purely on cosine similarity. Opposite instructions like <code style="background: #f1f5f9; padding: 2px 5px; border: 1px solid var(--border); color: var(--text); font-weight: bold;">enable</code> vs <code style="background: #f1f5f9; padding: 2px 5px; border: 1px solid var(--border); color: var(--text); font-weight: bold;">disable</code> share <strong>&gt;0.80</strong> cosine similarity, returning critical false positives. VeriRoute adds deterministic invariant checking and bidirectional NLI cross-encoder verification in &lt;1ms.
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- KPI Analytics Strip (GitHub Insights / Twitter Analytics style) -->
+    <section class="grid grid-cols-2 md:grid-cols-6 gap-3">
+      <div class="p-4 rounded-xl bg-[#16181c] border border-[#2f3336] flex flex-col justify-between">
+        <div class="text-xs text-[#71767b] font-medium">Total requests</div>
+        <div class="mt-1 text-2xl font-bold text-white mono" id="kpi-requests">0</div>
+        <div class="text-[11px] text-[#71767b] mt-0.5">HTTP &amp; streaming</div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-[#16181c] border border-[#2f3336] flex flex-col justify-between">
+        <div class="text-xs text-[#71767b] font-medium">Cost reduction</div>
+        <div class="mt-1 text-2xl font-bold text-white mono" id="kpi-savings-pct">0.0%</div>
+        <div class="text-[11px] text-[#71767b] mt-0.5 mono" id="kpi-savings-usd">$0.00 saved</div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-[#16181c] border border-[#2f3336] flex flex-col justify-between">
+        <div class="text-xs text-[#71767b] font-medium">Cache hit rate</div>
+        <div class="mt-1 text-2xl font-bold text-white mono" id="kpi-cache-rate">0.0%</div>
+        <div class="text-[11px] text-[#71767b] mt-0.5" id="kpi-cache-entries">0 entries</div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-[#16181c] border border-[#2f3336] flex flex-col justify-between">
+        <div class="text-xs text-[#71767b] font-medium">False positives blocked</div>
+        <div class="mt-1 text-2xl font-bold text-white mono" id="kpi-fp-blocked">0</div>
+        <div class="text-[11px] text-[#71767b] mt-0.5">Caught by Stage 2 NLI</div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-[#16181c] border border-[#2f3336] flex flex-col justify-between">
+        <div class="text-xs text-[#71767b] font-medium">P95 overhead</div>
+        <div class="mt-1 text-2xl font-bold text-white mono" id="kpi-overhead">0.0 ms</div>
+        <div class="text-[11px] text-[#71767b] mt-0.5">Verification &amp; UCB</div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-[#16181c] border border-[#2f3336] flex flex-col justify-between">
+        <div class="text-xs text-[#71767b] font-medium">Loops intercepted</div>
+        <div class="mt-1 text-2xl font-bold text-white mono" id="kpi-loops">0</div>
+        <div class="text-[11px] text-[#71767b] mt-0.5">Agent circuit breaker</div>
+      </div>
+    </section>
+
+    <!-- Horizontal Tabs (Twitter profile tabs style) -->
+    <div class="flex items-center gap-8 border-b border-[#2f3336] text-sm overflow-x-auto pb-0.5">
+      <button onclick="switchTab('tab-cache')" id="btn-tab-cache" class="tab-item active py-3 whitespace-nowrap">
+        Semantic Cache
+      </button>
+      <button onclick="switchTab('tab-gateway')" id="btn-tab-gateway" class="tab-item py-3 whitespace-nowrap">
+        Model Router
+      </button>
+      <button onclick="switchTab('tab-bandit')" id="btn-tab-bandit" class="tab-item py-3 whitespace-nowrap">
+        Circuit Breaker &amp; Weights
+      </button>
+      <button onclick="switchTab('tab-benchmarks')" id="btn-tab-benchmarks" class="tab-item py-3 whitespace-nowrap">
+        Benchmarks
+      </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 1: SEMANTIC CACHE                      -->
+    <!-- ========================================== -->
+    <section id="tab-cache" class="space-y-6">
+      <div class="p-6 rounded-2xl bg-[#16181c] border border-[#2f3336] space-y-6">
+        <div>
+          <h2 class="text-lg font-bold text-white tracking-tight">Two-Stage Cache Verification</h2>
+          <p class="text-sm text-[#71767b] mt-1 max-w-3xl leading-relaxed">
+            Standard vector caches (like GPTCache) use cosine similarity on embeddings. Opposing queries like <code class="text-white px-1.5 py-0.5 rounded bg-black border border-[#2f3336] text-xs">enable CORS</code> and <code class="text-white px-1.5 py-0.5 rounded bg-black border border-[#2f3336] text-xs">disable CORS</code> share over 80% similarity, causing false-positive cache hits. VeriRoute adds a second stage that verifies invariants (numbers, entities, negation polarity) and runs an NLI cross-encoder.
           </p>
+        </div>
 
-          <!-- Preset Scenario Filter Buttons (CyberArena style) -->
-          <div style="margin: 1.25rem 0;">
-            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 0.05em;">
-              &gt; TACTICAL_ADVERSARIAL_SCENARIOS:
-            </div>
-            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
-              <button onclick="loadCachePreset('How do I enable CORS in FastAPI?', 'How do I disable CORS in FastAPI?')" class="btn btn-ghost" style="font-size: 0.75rem;">
-                <span style="color: var(--red);">▶</span> ANTONYM: ENABLE vs DISABLE CORS
-              </button>
-              <button onclick="loadCachePreset('Transfer $500 to Alice', 'Transfer $500 to Bob')" class="btn btn-ghost" style="font-size: 0.75rem;">
-                <span style="color: var(--red);">▶</span> ENTITY: ALICE vs BOB ($500)
-              </button>
-              <button onclick="loadCachePreset('Transfer $500 to Alice', 'Transfer $5000 to Alice')" class="btn btn-ghost" style="font-size: 0.75rem;">
-                <span style="color: var(--red);">▶</span> NUMBER: $500 vs $5000
-              </button>
-              <button onclick="loadCachePreset('Transfer funds from checking to savings', 'Transfer funds from savings to checking')" class="btn btn-ghost" style="font-size: 0.75rem;">
-                <span style="color: var(--red);">▶</span> ROLE REVERSAL: CHECKING ⇄ SAVINGS
-              </button>
-              <button onclick="loadCachePreset('How do I enable CORS in FastAPI?', 'What is the way to turn on cross-origin in FastAPI?')" class="btn btn-ghost" style="font-size: 0.75rem;">
-                <span style="color: var(--green);">✓</span> PARAPHRASE: TURN ON CROSS-ORIGIN
-              </button>
-            </div>
-          </div>
-
-          <!-- Query Input Fields -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; margin: 1.25rem 0;">
-            <div>
-              <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">
-                &gt; REFERENCE_QUERY (STORED IN EMBEDDING SPACE)
-              </label>
-              <input id="cache-seed-input" class="field" value="How do I enable CORS in FastAPI?">
-            </div>
-            <div>
-              <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">
-                &gt; INCOMING_QUERY (EVALUATING INGRESS)
-              </label>
-              <input id="cache-test-input" class="field" value="How do I disable CORS in FastAPI?">
-            </div>
-          </div>
-
-          <div style="margin: 1.25rem 0; display: flex; align-items: center; gap: 0.8rem;">
-            <button onclick="compareCachePair()" id="btn-run-cache-eval" class="btn btn-blue" style="font-size: 0.8rem; padding: 0.55rem 1.1rem;">
-              EXECUTE_INVARIANT_RADAR_SCAN
+        <!-- Preset Filters (Twitter pill style) -->
+        <div class="space-y-2">
+          <div class="text-xs font-semibold text-[#71767b] uppercase tracking-wider">Example test cases</div>
+          <div class="flex flex-wrap gap-2 text-xs">
+            <button onclick="loadCachePreset('How do I enable CORS in FastAPI?', 'How do I disable CORS in FastAPI?')" class="px-3.5 py-1.5 rounded-full border border-[#2f3336] bg-black text-[#e7e9ea] hover:bg-neutral-900 transition">
+              Antonym: Enable vs. Disable CORS
             </button>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">Compares Stage-1 cosine similarity against Stage-2 joint NLI cross-encoder logits</span>
-          </div>
-
-          <!-- Comparative Terminal Panels Output -->
-          <div id="cache-compare-output" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.25rem; margin-top: 1.5rem;">
-            
-            <!-- Left: Baseline Panel -->
-            <div class="terminal-panel" style="margin: 0;">
-              <div class="terminal-header">
-                <span style="color: var(--text); font-weight: 700; font-size: 0.8rem;">
-                  BASELINE // RAW BI-ENCODER CACHE
-                </span>
-                <div style="flex: 1;"></div>
-                <span class="tech-badge badge-slate">STAGE_1_ONLY</span>
-              </div>
-              <div class="terminal-body">
-                <div id="vanilla-verdict-badge" style="margin-bottom: 1rem;"></div>
-
-                <div style="margin-bottom: 0.8rem;">
-                  <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.35rem;">
-                    <span style="color: var(--text-muted);">TOPICAL COSINE SIMILARITY:</span>
-                    <strong id="cmp-cosine" style="color: var(--text);">0.0000</strong>
-                  </div>
-                  <div class="progress-bar-container">
-                    <div id="cmp-cosine-bar" class="progress-bar-fill" style="width: 0%; background: #64748b;"></div>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-                    <span>THRESHOLD: τ ≥ 0.80</span>
-                    <span id="cmp-cosine-delta"></span>
-                  </div>
-                </div>
-
-                <div id="vanilla-explanation" style="font-family: 'Inter', sans-serif; font-size: 0.78rem; color: var(--text-muted); background: #f8fafc; border: 1px solid var(--border); padding: 0.65rem; border-radius: 2px; line-height: 1.45;"></div>
-              </div>
-            </div>
-
-            <!-- Right: VeriRoute Two-Stage Panel -->
-            <div class="terminal-panel" style="margin: 0; border-color: var(--blue);">
-              <div class="terminal-header" style="background: #f0f9ff; border-bottom-color: #bae6fd;">
-                <span style="color: var(--blue); font-weight: 700; font-size: 0.8rem;">
-                  VERIROUTE // TWO-STAGE ENTAILMENT CACHE
-                </span>
-                <div style="flex: 1;"></div>
-                <span id="cmp-latency" class="tech-badge badge-blue">0.0 ms INFER</span>
-              </div>
-              <div class="terminal-body">
-                <div id="veriroute-verdict-badge" style="margin-bottom: 1rem;"></div>
-
-                <div style="margin-bottom: 0.8rem;">
-                  <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.35rem;">
-                    <span style="color: var(--text-muted);">STAGE-2 NLI PREDICTION:</span>
-                    <strong id="cmp-nli-label" style="color: var(--text);">--</strong>
-                  </div>
-
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.5rem;">
-                    <div style="border: 1px solid #a7f3d0; background: #ecfdf5; padding: 0.5rem; border-radius: 2px;">
-                      <div style="font-size: 0.68rem; color: var(--green); font-weight: 700;">P(ENTAILMENT)</div>
-                      <div id="cmp-ent" style="font-size: 1.15rem; font-weight: 700; color: var(--green);">--</div>
-                    </div>
-                    <div style="border: 1px solid #fecdd3; background: #fff1f2; padding: 0.5rem; border-radius: 2px;">
-                      <div style="font-size: 0.68rem; color: var(--red); font-weight: 700;">P(CONTRADICTION)</div>
-                      <div id="cmp-con" style="font-size: 1.15rem; font-weight: 700; color: var(--red);">--</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div style="margin-top: 0.8rem; border-top: 1px solid var(--border); padding-top: 0.6rem;">
-                  <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 0.25rem;">
-                    DETERMINISTIC INVARIANT STATUS:
-                  </span>
-                  <div id="cmp-constraints" style="font-size: 0.75rem; color: var(--text); background: #f8fafc; border: 1px solid var(--border); padding: 0.5rem; border-radius: 2px;">
-                    --
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- TAB 2: AUTONOMOUS LINUCB DISPATCHER                     -->
-    <!-- ======================================================== -->
-    <div id="tab-gateway" class="tab-view hidden">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.25rem;">
-        
-        <!-- Left: Command Ingress Terminal -->
-        <div class="terminal-panel">
-          <div class="terminal-header">
-            <span class="mono" style="color: var(--blue); font-weight: 700; font-size: 0.85rem;">
-              [MODULE_02] // COMMAND INGRESS (/v1/chat/completions)
-            </span>
-            <div style="flex: 1;"></div>
-            <span class="tech-badge badge-slate">SSE_ENABLED</span>
-            <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
-          </div>
-          <div class="terminal-body mono">
-            
-            <p style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
-              Extracts context vector $\mathbf{x}_t \in \mathbb{R}^8$, evaluates LinUCB upper confidence bounds, balances cost/quality, and incorporates live provider TTFT penalties.
-            </p>
-
-            <!-- Preset Buttons -->
-            <div style="margin: 1rem 0;">
-              <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; margin-bottom: 0.4rem;">
-                &gt; WORKLOAD_PROFILES:
-              </div>
-              <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
-                <button onclick="setGatewayPrompt('What does HTTP stand for? Explain in one sentence.')" class="btn btn-ghost" style="font-size: 0.72rem; padding: 0.3rem 0.6rem;">
-                  QA_BASIC
-                </button>
-                <button onclick="setGatewayPrompt('Write a Python function `def reverse_words(s: str)` that reverses words in a string.')" class="btn btn-ghost" style="font-size: 0.72rem; padding: 0.3rem 0.6rem;">
-                  CODE_SYNTAX
-                </button>
-                <button onclick="setGatewayPrompt('Design a multi-region active-active distributed consensus architecture using Raft and Paxos with sharding, vector clocks, idempotency, backpressure, and CAP theorem trade-offs.')" class="btn btn-ghost" style="font-size: 0.72rem; padding: 0.3rem 0.6rem;">
-                  DISTRIBUTED_ARCH
-                </button>
-                <button onclick="setGatewayPrompt('Prove by strong induction and derive the exact amortized time complexity O(n log n) for a self-balancing tree with dynamic programming state transitions and formal invariant verification.')" class="btn btn-ghost" style="font-size: 0.72rem; padding: 0.3rem 0.6rem;">
-                  MATH_PROOF
-                </button>
-              </div>
-            </div>
-
-            <div style="margin-bottom: 1rem;">
-              <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">
-                &gt; USER_INGRESS_BUFFER:
-              </label>
-              <textarea id="gw-prompt" rows="4" class="field" style="resize: vertical; font-size: 0.78rem;">Design a multi-region active-active distributed consensus architecture using Raft and Paxos with sharding, vector clocks, idempotency, backpressure, and CAP theorem trade-offs.</textarea>
-            </div>
-
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
-              <label style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
-                <input id="gw-bypass-cache" type="checkbox">
-                <span>BYPASS_SEMANTIC_CACHE</span>
-              </label>
-
-              <button onclick="sendGatewayRequest()" id="btn-gw-send" class="btn btn-blue" style="font-size: 0.8rem;">
-                DISPATCH_REQUEST &gt;&gt;
-              </button>
-            </div>
-
-            <!-- Assistant Output Box -->
-            <div id="gw-response-box" style="margin-top: 1.25rem; padding: 0.85rem; background: #f8fafc; border: 1px solid var(--border); font-size: 0.78rem; line-height: 1.5; border-radius: 2px; white-space: pre-wrap; display: none;"></div>
-
-            <!-- Online Feedback Loop -->
-            <div id="gw-feedback-bar" style="margin-top: 1rem; padding: 0.75rem; background: #f1f5f9; border: 1px solid var(--border); display: none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
-              <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">INGEST REWARD TO MODEL ARM:</span>
-              <div style="display: flex; gap: 0.4rem;">
-                <button onclick="sendFeedback(0.98)" class="btn btn-ghost" style="color: var(--green); border-color: var(--green); font-size: 0.72rem; padding: 0.25rem 0.5rem;">
-                  + HIGH_QUALITY (0.98)
-                </button>
-                <button onclick="sendFeedback(0.20)" class="btn btn-ghost" style="color: var(--red); border-color: var(--red); font-size: 0.72rem; padding: 0.25rem 0.5rem;">
-                  - LOW_QUALITY (0.20)
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Right: Telemetry Waterfall Terminal -->
-        <div class="terminal-panel">
-          <div class="terminal-header">
-            <span class="mono" style="color: var(--blue); font-weight: 700; font-size: 0.85rem;">
-              TELEMETRY_WATERFALL // LINUCB MATRIX RANKING
-            </span>
-            <div style="flex: 1;"></div>
-            <span class="tech-badge badge-slate">ONLINE_SOLVER</span>
-            <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
-          </div>
-          <div class="terminal-body mono">
-            
-            <div id="gw-telemetry-empty" style="padding: 3rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">
-              &gt; WAITING FOR REQUEST INGRESS...<br>
-              <span style="font-size: 0.75rem;">Dispatch a prompt to view LinUCB confidence bounds and telemetry.</span>
-            </div>
-
-            <div id="gw-telemetry-content" style="display: none;">
-              
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 1rem;">
-                <div style="padding: 0.6rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 2px;">
-                  <div style="font-size: 0.68rem; color: var(--text-muted);">DISPATCHED_MODEL</div>
-                  <div id="tel-model" style="font-size: 0.82rem; font-weight: 700; color: var(--blue); margin-top: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">--</div>
-                </div>
-                <div style="padding: 0.6rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 2px;">
-                  <div style="font-size: 0.68rem; color: var(--text-muted);">COMPLEXITY</div>
-                  <div id="tel-domain" style="font-size: 0.82rem; font-weight: 700; color: var(--text); margin-top: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">--</div>
-                </div>
-                <div style="padding: 0.6rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 2px;">
-                  <div style="font-size: 0.68rem; color: var(--text-muted);">SAVED_USD</div>
-                  <div id="tel-cost" style="font-size: 0.82rem; font-weight: 700; color: var(--green); margin-top: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">--</div>
-                </div>
-              </div>
-
-              <!-- Arm ranking list -->
-              <div style="border: 1px solid var(--border); border-radius: 2px; padding: 0.8rem; margin-bottom: 0.8rem; background: #ffffff;">
-                <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; margin-bottom: 0.5rem;">
-                  MODEL ARMS RANKING // UCB = θ̂ᵀx + α√(xᵀA⁻¹x) - λ·TTFT
-                </div>
-                <div id="tel-arms-table" style="display: flex; flex-direction: column; gap: 0.4rem;"></div>
-              </div>
-
-              <div style="font-size: 0.72rem; color: var(--text-muted); background: #f8fafc; border: 1px solid var(--border); padding: 0.6rem; border-radius: 2px;" id="tel-cache-info">
-                --
-              </div>
-
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- TAB 3: BANDIT MATRIX & AGENT INTERLOCK                  -->
-    <!-- ======================================================== -->
-    <div id="tab-bandit" class="tab-view hidden">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.25rem;">
-        
-        <!-- Left: Agent Loop Quarantine -->
-        <div class="terminal-panel">
-          <div class="terminal-header">
-            <span class="mono" style="color: var(--red); font-weight: 700; font-size: 0.85rem;">
-              [MODULE_03] // AGENT TRAJECTORY INTERLOCK (STATEFUL CIRCUIT BREAKER)
-            </span>
-            <div style="flex: 1;"></div>
-            <button onclick="triggerStuckAgentLoop()" id="btn-stuck-loop" class="btn" style="background: var(--red); border-color: var(--red); font-size: 0.72rem; padding: 0.25rem 0.6rem;">
-              TRIP_INTERLOCK
+            <button onclick="loadCachePreset('Transfer $500 to Alice', 'Transfer $500 to Bob')" class="px-3.5 py-1.5 rounded-full border border-[#2f3336] bg-black text-[#e7e9ea] hover:bg-neutral-900 transition">
+              Entity swap: Alice vs. Bob ($500)
             </button>
-            <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
-          </div>
-          <div class="terminal-body mono">
-            
-            <p style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
-              Tracks multi-turn agent tool-call signatures across conversation traces. When identical/failing actions occur $\ge 3$ times, it injects a corrective directive and forces frontier escalation.
-            </p>
-
-            <div id="loop-demo-output" style="padding: 0.85rem; background: #f8fafc; border: 1px solid var(--border); font-size: 0.76rem; line-height: 1.5; border-radius: 2px; white-space: pre-wrap;">
-Click "TRIP_INTERLOCK" to simulate an autonomous agent calling `search_codebase({"query": "auth_middleware"})` 3 consecutive times. The circuit breaker intercepts the loop and escalates to Claude 3.5 Sonnet.
-            </div>
-
+            <button onclick="loadCachePreset('Transfer $500 to Alice', 'Transfer $5000 to Alice')" class="px-3.5 py-1.5 rounded-full border border-[#2f3336] bg-black text-[#e7e9ea] hover:bg-neutral-900 transition">
+              Number shift: $500 vs. $5000
+            </button>
+            <button onclick="loadCachePreset('Transfer funds from checking to savings', 'Transfer funds from savings to checking')" class="px-3.5 py-1.5 rounded-full border border-[#2f3336] bg-black text-[#e7e9ea] hover:bg-neutral-900 transition">
+              Role reversal: Checking ⇄ Savings
+            </button>
+            <button onclick="loadCachePreset('How do I enable CORS in FastAPI?', 'What is the way to turn on cross-origin in FastAPI?')" class="px-3.5 py-1.5 rounded-full border border-[#2f3336] bg-black text-[#e7e9ea] hover:bg-neutral-900 transition">
+              Paraphrase: Turn on cross-origin
+            </button>
           </div>
         </div>
 
-        <!-- Right: Bandit Matrix Parameters -->
-        <div class="terminal-panel">
-          <div class="terminal-header">
-            <span class="mono" style="color: var(--blue); font-weight: 700; font-size: 0.85rem;">
-              LEARNED RIDGE REGRESSION PARAMETERS (θ̂ = A⁻¹b)
-            </span>
-            <div style="flex: 1;"></div>
-            <span class="tech-badge badge-slate">DIM=8</span>
-            <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
+        <!-- Query Inputs -->
+        <div class="grid md:grid-cols-2 gap-4 text-xs">
+          <div class="space-y-1.5">
+            <label class="block font-medium text-[#71767b]">Cached reference entry</label>
+            <input id="cache-seed-input" type="text" value="How do I enable CORS in FastAPI?" class="w-full px-3.5 py-2.5 rounded-lg bg-black border border-[#2f3336] text-white focus:border-white focus:outline-none transition">
           </div>
-          <div class="terminal-body mono">
-            
-            <p style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
-              Online covariance matrices ($\mathbf{A}_a \in \mathbb{R}^{8 \times 8}$) and reward vectors ($\mathbf{b}_a \in \mathbb{R}^8$) persisted in SQLite (`data/veriroute_state.db`).
-            </p>
-
-            <div id="bandit-arms-cards" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
-
+          <div class="space-y-1.5">
+            <label class="block font-medium text-[#71767b]">Incoming query to test</label>
+            <input id="cache-test-input" type="text" value="How do I disable CORS in FastAPI?" class="w-full px-3.5 py-2.5 rounded-lg bg-black border border-[#2f3336] text-white focus:border-white focus:outline-none transition">
           </div>
         </div>
 
-      </div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- TAB 4: PARETO BENCHMARK BENCH                           -->
-    <!-- ======================================================== -->
-    <div id="tab-benchmarks" class="tab-view hidden">
-      <div class="terminal-panel">
-        <div class="terminal-header">
-          <span class="mono" style="color: var(--green); font-weight: 700; font-size: 0.85rem;">
-            [MODULE_04] // AUTOMATED PARETO BENCHMARK SUITE
-          </span>
-          <div style="flex: 1;"></div>
-          <button onclick="runFullBenchmarkSuite()" id="btn-run-bench" class="btn btn-blue" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
-            ▶ EXECUTE_BENCHMARK_SUITE
+        <div>
+          <button onclick="compareCachePair()" id="btn-run-cache-eval" class="px-5 py-2 rounded-full bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition active:scale-95">
+            Compare verification
           </button>
-          <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
         </div>
-        <div class="terminal-body mono">
+
+        <!-- Side-by-side Output (Clean B&W Cards) -->
+        <div id="cache-compare-output" class="grid md:grid-cols-2 gap-4 pt-2">
           
-          <p style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
-            Runs 27 adversarial cache pairs (negations, numbers, entities) and 96 multi-tier bandit routing workloads to evaluate false-positive reduction, cost savings, and quality parity.
-          </p>
+          <!-- Standard Vector Cache Card -->
+          <div class="p-5 rounded-xl bg-black border border-[#2f3336] space-y-4">
+            <div class="flex items-center justify-between border-b border-[#2f3336] pb-3">
+              <span class="text-xs font-bold text-[#71767b] uppercase tracking-wider">Standard Vector Cache</span>
+              <span class="text-[11px] text-[#71767b] font-mono">Stage 1 only</span>
+            </div>
 
-          <div id="bench-output" style="display: none; margin-top: 1.5rem;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.25rem;">
-              
-              <!-- Cache Benchmark Card -->
-              <div class="terminal-panel" style="margin: 0;">
-                <div class="terminal-header">
-                  <span style="font-size: 0.78rem; font-weight: 700; color: var(--blue);">
-                    BENCHMARK 1 // ADVERSARIAL CACHE PRECISION (27 PAIRS)
-                  </span>
+            <div id="vanilla-verdict-badge"></div>
+
+            <div class="space-y-3 text-xs">
+              <div>
+                <div class="flex justify-between text-[#71767b] mb-1.5 font-mono">
+                  <span>Cosine similarity:</span>
+                  <span id="cmp-cosine" class="text-white font-semibold">0.0000</span>
                 </div>
-                <div class="terminal-body" id="bench-cache-summary" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                <div class="w-full bg-[#16181c] border border-[#2f3336] rounded-full h-2 overflow-hidden">
+                  <div id="cmp-cosine-bar" class="h-full bg-white bar-fill" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-[11px] text-[#71767b] mt-1 font-mono">
+                  <span>Hit threshold: 0.80</span>
+                  <span id="cmp-cosine-delta"></span>
+                </div>
               </div>
 
-              <!-- Bandit Benchmark Card -->
-              <div class="terminal-panel" style="margin: 0;">
-                <div class="terminal-header">
-                  <span style="font-size: 0.78rem; font-weight: 700; color: var(--green);">
-                    BENCHMARK 2 // LINUCB PARETO CONVERGENCE (96 REQS)
-                  </span>
+              <div id="vanilla-explanation" class="text-[#71767b] text-xs leading-relaxed pt-1"></div>
+            </div>
+          </div>
+
+          <!-- VeriRoute Two-Stage Card -->
+          <div class="p-5 rounded-xl bg-black border border-white/40 space-y-4">
+            <div class="flex items-center justify-between border-b border-[#2f3336] pb-3">
+              <span class="text-xs font-bold text-white uppercase tracking-wider">VeriRoute Two-Stage Cache</span>
+              <span id="cmp-latency" class="text-[11px] text-[#71767b] font-mono">0.0 ms</span>
+            </div>
+
+            <div id="veriroute-verdict-badge"></div>
+
+            <div class="space-y-3 text-xs">
+              <div>
+                <div class="flex justify-between text-[#71767b] mb-1.5 font-mono">
+                  <span>Stage 2 NLI prediction:</span>
+                  <span id="cmp-nli-label" class="text-white font-bold">--</span>
                 </div>
-                <div class="terminal-body" id="bench-bandit-summary" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs font-mono pt-1">
+                  <div class="p-2.5 rounded-lg bg-[#16181c] border border-[#2f3336]">
+                    <span class="text-[#71767b] text-[10px] block font-sans">P(Entailment)</span>
+                    <span id="cmp-ent" class="text-white font-bold text-sm">--</span>
+                  </div>
+                  <div class="p-2.5 rounded-lg bg-[#16181c] border border-[#2f3336]">
+                    <span class="text-[#71767b] text-[10px] block font-sans">P(Contradiction)</span>
+                    <span id="cmp-con" class="text-white font-bold text-sm">--</span>
+                  </div>
+                </div>
               </div>
 
+              <div class="pt-2 border-t border-[#2f3336]">
+                <span class="text-[11px] text-[#71767b] font-medium block mb-1">Deterministic invariant guard:</span>
+                <div id="cmp-constraints" class="p-2.5 rounded-lg bg-[#16181c] border border-[#2f3336] text-xs font-mono text-white">--</div>
+              </div>
             </div>
           </div>
 
         </div>
       </div>
-    </div>
+    </section>
 
-  </div>
+    <!-- ========================================== -->
+    <!-- TAB 2: MODEL ROUTER                        -->
+    <!-- ========================================== -->
+    <section id="tab-gateway" class="space-y-6 hidden">
+      <div class="grid lg:grid-cols-12 gap-6">
+        
+        <!-- Left: Query Input -->
+        <div class="lg:col-span-6 p-6 rounded-2xl bg-[#16181c] border border-[#2f3336] space-y-4">
+          <div class="flex items-center justify-between border-b border-[#2f3336] pb-3">
+            <h2 class="text-sm font-bold text-white tracking-tight">Prompt Input</h2>
+            <span class="text-xs text-[#71767b] font-mono">POST /v1/chat/completions</span>
+          </div>
+
+          <p class="text-xs text-[#71767b] leading-relaxed">
+            The router extracts an 8-dimensional feature vector $\mathbf{x}_t$, evaluates LinUCB upper confidence bounds across model arms, and minimizes both latency and token costs.
+          </p>
+
+          <!-- Prompt Preset Pills -->
+          <div class="space-y-1.5">
+            <div class="text-xs text-[#71767b] font-medium">Workload presets</div>
+            <div class="flex flex-wrap gap-1.5 text-xs">
+              <button onclick="setGatewayPrompt('What does HTTP stand for? Explain in one sentence.')" class="px-3 py-1 rounded-full border border-[#2f3336] bg-black text-[#e7e9ea] hover:bg-neutral-900 transition">
+                Simple Q&amp;A
+              </button>
+              <button onclick="setGatewayPrompt('Write a Python function `def reverse_words(s: str)` that reverses words in a string.')" class="px-3 py-1 rounded-full border border-[#2f3336] bg-black text-[#e7e9ea] hover:bg-neutral-900 transition">
+                Basic code
+              </button>
+              <button onclick="setGatewayPrompt('Design a multi-region active-active distributed consensus architecture using Raft and Paxos with sharding, vector clocks, idempotency, backpressure, and CAP theorem trade-offs.')" class="px-3 py-1 rounded-full border border-[#2f3336] bg-black text-[#e7e9ea] hover:bg-neutral-900 transition">
+                Distributed architecture
+              </button>
+              <button onclick="setGatewayPrompt('Prove by strong induction and derive the exact amortized time complexity O(n log n) for a self-balancing tree with dynamic programming state transitions and formal invariant verification.')" class="px-3 py-1 rounded-full border border-[#2f3336] bg-black text-[#e7e9ea] hover:bg-neutral-900 transition">
+                Math proof
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-xs font-medium text-[#71767b]">Prompt</label>
+            <textarea id="gw-prompt" rows="4" class="w-full px-3.5 py-2.5 rounded-lg bg-black border border-[#2f3336] text-xs font-mono text-white focus:border-white focus:outline-none transition leading-relaxed">Design a multi-region active-active distributed consensus architecture using Raft and Paxos with sharding, vector clocks, idempotency, backpressure, and CAP theorem trade-offs.</textarea>
+          </div>
+
+          <div class="flex items-center justify-between pt-1">
+            <label class="flex items-center gap-2 text-xs text-[#71767b] cursor-pointer">
+              <input id="gw-bypass-cache" type="checkbox" class="rounded bg-black border-[#2f3336]">
+              <span>Bypass cache</span>
+            </label>
+
+            <button onclick="sendGatewayRequest()" id="btn-gw-send" class="px-4 py-2 rounded-full bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition active:scale-95">
+              Send request
+            </button>
+          </div>
+
+          <!-- Output Box -->
+          <div id="gw-response-box" class="p-4 rounded-xl bg-black border border-[#2f3336] text-xs text-white whitespace-pre-wrap font-mono leading-relaxed hidden"></div>
+
+          <!-- Online Feedback Bar -->
+          <div id="gw-feedback-bar" class="p-3 rounded-lg bg-black border border-[#2f3336] flex items-center justify-between hidden">
+            <span class="text-xs text-[#71767b]">Rate response:</span>
+            <div class="flex items-center gap-2">
+              <button onclick="sendFeedback(0.98)" class="px-3 py-1 rounded-full border border-[#2f3336] bg-black text-white hover:bg-white/10 text-xs transition">
+                + Good (0.98)
+              </button>
+              <button onclick="sendFeedback(0.20)" class="px-3 py-1 rounded-full border border-[#2f3336] bg-black text-[#71767b] hover:text-white hover:bg-white/10 text-xs transition">
+                - Poor (0.20)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Telemetry Waterfall -->
+        <div class="lg:col-span-6 p-6 rounded-2xl bg-[#16181c] border border-[#2f3336] space-y-4">
+          <div class="flex items-center justify-between border-b border-[#2f3336] pb-3">
+            <h3 class="text-sm font-bold text-white tracking-tight">Routing Telemetry</h3>
+            <span class="text-xs text-[#71767b] font-mono">LinUCB solver</span>
+          </div>
+
+          <div id="gw-telemetry-empty" class="text-xs text-[#71767b] py-16 text-center">
+            Send a prompt to view the feature extraction, LinUCB confidence bounds, and arm ranking.
+          </div>
+
+          <div id="gw-telemetry-content" class="space-y-4 hidden text-xs">
+            <div class="grid grid-cols-3 gap-2.5">
+              <div class="p-3 rounded-lg bg-black border border-[#2f3336]">
+                <span class="text-[11px] text-[#71767b] block">Selected model</span>
+                <span id="tel-model" class="font-bold text-white font-mono text-xs mt-0.5 block truncate">--</span>
+              </div>
+              <div class="p-3 rounded-lg bg-black border border-[#2f3336]">
+                <span class="text-[11px] text-[#71767b] block">Complexity</span>
+                <span id="tel-domain" class="font-bold text-white font-mono text-xs mt-0.5 block truncate">--</span>
+              </div>
+              <div class="p-3 rounded-lg bg-black border border-[#2f3336]">
+                <span class="text-[11px] text-[#71767b] block">Cost saved</span>
+                <span id="tel-cost" class="font-bold text-white font-mono text-xs mt-0.5 block truncate">--</span>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-black border border-[#2f3336] space-y-2.5">
+              <div class="flex items-center justify-between text-[#71767b] border-b border-[#2f3336] pb-2 text-[11px]">
+                <span class="font-bold uppercase tracking-wider">Candidate arms ranking</span>
+                <span class="font-mono">UCB = E[r] + Bonus - Latency</span>
+              </div>
+              <div id="tel-arms-table" class="space-y-2 font-mono"></div>
+            </div>
+
+            <div class="p-3.5 rounded-lg bg-black border border-[#2f3336] text-[11px] font-mono text-[#71767b]">
+              <span class="text-white block mb-0.5">Pipeline status:</span>
+              <span id="tel-cache-info">--</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: CIRCUIT BREAKER & WEIGHTS           -->
+    <!-- ========================================== -->
+    <section id="tab-bandit" class="space-y-6 hidden">
+      <div class="grid md:grid-cols-2 gap-6">
+        
+        <!-- Circuit Breaker -->
+        <div class="p-6 rounded-2xl bg-[#16181c] border border-[#2f3336] space-y-4">
+          <div class="flex items-center justify-between border-b border-[#2f3336] pb-3">
+            <div>
+              <h2 class="text-sm font-bold text-white tracking-tight">Agent Circuit Breaker</h2>
+              <p class="text-xs text-[#71767b] mt-0.5">
+                Quarantines multi-turn agent tool-call loops before burning API token budgets.
+              </p>
+            </div>
+            <button onclick="triggerStuckAgentLoop()" id="btn-stuck-loop" class="px-3.5 py-1.5 rounded-full border border-white text-white font-semibold text-xs hover:bg-white hover:text-black transition active:scale-95 shrink-0">
+              Test loop breaker
+            </button>
+          </div>
+
+          <div id="loop-demo-output" class="p-4 rounded-xl bg-black border border-[#2f3336] text-xs font-mono text-white whitespace-pre-wrap leading-relaxed">
+Click "Test loop breaker" to simulate an agent calling `search_codebase({"query": "auth_middleware"})` 3 consecutive times. The circuit breaker intercepts the loop, injects a system directive, and escalates to Claude 3.5 Sonnet.
+          </div>
+        </div>
+
+        <!-- Bandit Parameters -->
+        <div class="p-6 rounded-2xl bg-[#16181c] border border-[#2f3336] space-y-4">
+          <div class="border-b border-[#2f3336] pb-3">
+            <h2 class="text-sm font-bold text-white tracking-tight">Learned Parameters ($\hat{\boldsymbol{\theta}}_a = \mathbf{A}_a^{-1}\mathbf{b}_a$)</h2>
+            <p class="text-xs text-[#71767b] mt-0.5">
+              Online covariance matrices ($\mathbf{A}_a \in \mathbb{R}^{8 \times 8}$) updated across requests in SQLite.
+            </p>
+          </div>
+          <div id="bandit-arms-cards" class="space-y-3 font-mono text-xs"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: BENCHMARKS                          -->
+    <!-- ========================================== -->
+    <section id="tab-benchmarks" class="space-y-6 hidden">
+      <div class="p-6 rounded-2xl bg-[#16181c] border border-[#2f3336] space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-[#2f3336] pb-4">
+          <div>
+            <h2 class="text-base font-bold text-white tracking-tight">Evaluation Suite</h2>
+            <p class="text-xs text-[#71767b] mt-0.5">
+              27 adversarial cache pairs (negations, numbers, entities) and 96 multi-tier bandit workloads.
+            </p>
+          </div>
+          <button onclick="runFullBenchmarkSuite()" id="btn-run-bench" class="px-4 py-2 rounded-full bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition active:scale-95">
+            Run benchmark suite
+          </button>
+        </div>
+
+        <div id="bench-output" class="space-y-6 hidden">
+          <div class="grid md:grid-cols-2 gap-6">
+            
+            <div class="p-5 rounded-xl bg-black border border-[#2f3336] space-y-3 font-mono">
+              <span class="text-xs font-bold text-white uppercase tracking-wider block font-sans">
+                Benchmark 1: Adversarial Cache Precision (27 Pairs)
+              </span>
+              <div id="bench-cache-summary" class="space-y-2 text-xs"></div>
+            </div>
+
+            <div class="p-5 rounded-xl bg-black border border-[#2f3336] space-y-3 font-mono">
+              <span class="text-xs font-bold text-white uppercase tracking-wider block font-sans">
+                Benchmark 2: LinUCB Pareto Frontier (96 Requests)
+              </span>
+              <div id="bench-bandit-summary" class="space-y-2 text-xs"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
 
   <script>
     let lastGatewayArm = null;
     let lastGatewayPrompt = null;
 
-    function showTab(tabId) {
+    function switchTab(tabId) {
       ['tab-cache', 'tab-gateway', 'tab-bandit', 'tab-benchmarks'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
-        const navBtn = document.getElementById('nav-btn-' + id.replace('tab-', ''));
-        if (navBtn) {
-          navBtn.classList.remove('btn-ghost-active');
-        }
+        document.getElementById('btn-' + id).classList.remove('active');
       });
       document.getElementById(tabId).classList.remove('hidden');
-      const activeNav = document.getElementById('nav-btn-' + tabId.replace('tab-', ''));
-      if (activeNav) {
-        activeNav.classList.add('btn-ghost-active');
-      }
+      document.getElementById('btn-' + tabId).classList.add('active');
       refreshStats();
     }
 
@@ -708,12 +481,11 @@ Click "TRIP_INTERLOCK" to simulate an autonomous agent calling `search_codebase(
         const m = data.metrics;
         document.getElementById('kpi-requests').textContent = m.total_requests;
         document.getElementById('kpi-savings-pct').textContent = m.cost_savings_pct.toFixed(1) + '%';
-        document.getElementById('kpi-savings-usd').textContent = '$' + m.total_cost_saved_usd.toFixed(4) + ' SAVED';
+        document.getElementById('kpi-savings-usd').textContent = '$' + m.total_cost_saved_usd.toFixed(4) + ' saved';
         document.getElementById('kpi-cache-rate').textContent = m.cache_hit_rate_pct.toFixed(1) + '%';
-        document.getElementById('kpi-cache-entries').textContent = data.cache.entries_count + ' ENTRIES ACTIVE';
+        document.getElementById('kpi-cache-entries').textContent = data.cache.entries_count + ' entries';
         document.getElementById('kpi-fp-blocked').textContent = data.cache.false_positives_blocked;
         document.getElementById('kpi-overhead').textContent = m.gateway_overhead_p95_ms.toFixed(2) + ' ms';
-        document.getElementById('nav-p95-badge').textContent = 'P95: ' + m.gateway_overhead_p95_ms.toFixed(2) + 'ms';
         document.getElementById('kpi-loops').textContent = data.loop_breaker.total_loops_broken;
 
         // Render Bandit Arms in Tab 3
@@ -721,13 +493,13 @@ Click "TRIP_INTERLOCK" to simulate an autonomous agent calling `search_codebase(
         armsContainer.innerHTML = '';
         Object.entries(data.bandit.arms).forEach(([armId, info]) => {
           const card = document.createElement('div');
-          card.style.cssText = 'padding: 0.75rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 2px;';
+          card.className = 'p-3.5 rounded-xl bg-black border border-[#2f3336] space-y-2';
           card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-              <strong style="color: var(--blue); font-size: 0.8rem;">${info.display_name}</strong>
-              <span style="font-size: 0.72rem; color: var(--text-muted);">PULLS: <strong>${info.pulls}</strong> | E[r]: <strong style="color: var(--green);">${info.avg_reward}</strong> | TTFT: ${info.ema_ttft_ms}ms</span>
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-white">${info.display_name}</span>
+              <span class="text-[#71767b]">Pulls: <strong class="text-white">${info.pulls}</strong> | E[r]: <strong class="text-white">${info.avg_reward}</strong> | TTFT: ${info.ema_ttft_ms}ms</span>
             </div>
-            <div style="font-size: 0.7rem; color: var(--text); background: #ffffff; border: 1px solid var(--border); padding: 0.45rem; border-radius: 2px; overflow-x: auto;">
+            <div class="text-[11px] text-[#71767b] bg-[#16181c] p-2 rounded-lg border border-[#2f3336] overflow-x-auto">
               ${JSON.stringify(info.learned_theta, null, 2)}
             </div>
           `;
@@ -746,8 +518,8 @@ Click "TRIP_INTERLOCK" to simulate an autonomous agent calling `search_codebase(
 
     async function compareCachePair() {
       const btn = document.getElementById('btn-run-cache-eval');
-      const orig = btn.innerHTML;
-      btn.innerHTML = 'SCANNING...';
+      const orig = btn.textContent;
+      btn.textContent = 'Verifying...';
 
       const seed_query = document.getElementById('cache-seed-input').value;
       const test_query = document.getElementById('cache-test-input').value;
@@ -757,7 +529,9 @@ Click "TRIP_INTERLOCK" to simulate an autonomous agent calling `search_codebase(
         body: JSON.stringify({seed_query, test_query})
       });
       const data = await res.json();
-      btn.innerHTML = orig;
+      btn.textContent = orig;
+
+      document.getElementById('cache-compare-output').classList.remove('hidden');
 
       const sim = data.cosine_similarity;
       document.getElementById('cmp-cosine').textContent = sim.toFixed(4);
@@ -768,39 +542,36 @@ Click "TRIP_INTERLOCK" to simulate an autonomous agent calling `search_codebase(
       const vr = data.veriroute_two_stage_cache;
 
       if (data.vanilla_cosine_cache.would_hit && vr.false_positive_prevented) {
-        vBadge.innerHTML = '<span class="tech-badge badge-red" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">⚠ FALSE POSITIVE CACHE HIT (CRITICAL BUG)</span>';
-        vExp.textContent = 'Vanilla vector cache returned an erroneous cached response because dense embeddings cluster opposite actions in identical semantic subspaces (>0.80 cosine similarity).';
-        document.getElementById('cmp-cosine-bar').style.background = '#ef4444';
+        vBadge.innerHTML = '<span class="px-2.5 py-1 rounded-full border border-red-500/40 bg-red-950/40 text-red-300 text-xs font-semibold">False positive hit (Bug)</span>';
+        vExp.textContent = 'The standard vector cache blindly returned the cached answer because embeddings cluster opposing actions in the same space (>0.80 similarity).';
       } else if (data.vanilla_cosine_cache.would_hit) {
-        vBadge.innerHTML = '<span class="tech-badge badge-green" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">✓ CACHE HIT (COSINE ≥ 0.80)</span>';
-        vExp.textContent = 'Cosine similarity passed the threshold and matched topical subspace.';
-        document.getElementById('cmp-cosine-bar').style.background = '#10b981';
+        vBadge.innerHTML = '<span class="px-2.5 py-1 rounded-full border border-neutral-700 bg-neutral-900 text-white text-xs font-semibold">Cache hit (≥ 0.80)</span>';
+        vExp.textContent = 'Cosine similarity passed the threshold.';
       } else {
-        vBadge.innerHTML = '<span class="tech-badge badge-slate" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">CACHE MISS (COSINE &lt; 0.80)</span>';
-        vExp.textContent = 'Below Stage-1 cosine threshold.';
-        document.getElementById('cmp-cosine-bar').style.background = '#64748b';
+        vBadge.innerHTML = '<span class="px-2.5 py-1 rounded-full border border-neutral-800 bg-neutral-900 text-[#71767b] text-xs font-semibold">Cache miss (< 0.80)</span>';
+        vExp.textContent = 'Below the Stage 1 cosine threshold.';
       }
 
       const vrBadge = document.getElementById('veriroute-verdict-badge');
       if (vr.cache_hit) {
-        vrBadge.innerHTML = '<span class="tech-badge badge-green" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">✓ VERIFIED SAFE PARAPHRASE HIT</span>';
+        vrBadge.innerHTML = '<span class="px-2.5 py-1 rounded-full border border-white bg-white text-black text-xs font-semibold">Verified paraphrase hit</span>';
       } else if (vr.false_positive_prevented) {
-        vrBadge.innerHTML = '<span class="tech-badge badge-amber" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">🛡 BLOCKED FALSE POSITIVE (INTERCEPTED)</span>';
+        vrBadge.innerHTML = '<span class="px-2.5 py-1 rounded-full border border-neutral-600 bg-black text-white text-xs font-semibold">Blocked false positive</span>';
       } else {
-        vrBadge.innerHTML = '<span class="tech-badge badge-slate" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">STAGE-1 MISS</span>';
+        vrBadge.innerHTML = '<span class="px-2.5 py-1 rounded-full border border-neutral-800 bg-neutral-900 text-[#71767b] text-xs font-semibold">Stage 1 miss</span>';
       }
 
       if (vr.stage2_nli) {
         document.getElementById('cmp-nli-label').textContent = vr.stage2_nli.label;
         document.getElementById('cmp-ent').textContent = (vr.stage2_nli.entailment_prob * 100).toFixed(1) + '%';
         document.getElementById('cmp-con').textContent = (vr.stage2_nli.contradiction_prob * 100).toFixed(1) + '%';
-        document.getElementById('cmp-constraints').textContent = vr.stage2_nli.constraint_report.rejection_reason || 'ALL INVARIANTS SATISFIED (NUMBERS, ENTITIES, POLARITY)';
-        document.getElementById('cmp-latency').textContent = (vr.stage1_latency_ms + vr.stage2_nli.inference_time_ms).toFixed(2) + ' ms INFER';
+        document.getElementById('cmp-constraints').textContent = vr.stage2_nli.constraint_report.rejection_reason || 'All invariants satisfied (numbers, entities, polarity)';
+        document.getElementById('cmp-latency').textContent = (vr.stage1_latency_ms + vr.stage2_nli.inference_time_ms).toFixed(2) + ' ms';
       } else {
-        document.getElementById('cmp-nli-label').textContent = 'SKIPPED (STAGE-1 REJECT)';
+        document.getElementById('cmp-nli-label').textContent = 'Skipped (Stage 1 reject)';
         document.getElementById('cmp-ent').textContent = '--';
         document.getElementById('cmp-con').textContent = '--';
-        document.getElementById('cmp-constraints').textContent = 'STAGE-1 COSINE BELOW THRESHOLD; SKIPPED STAGE-2';
+        document.getElementById('cmp-constraints').textContent = 'Stage 1 cosine below threshold; Stage 2 skipped to save compute.';
         document.getElementById('cmp-latency').textContent = vr.stage1_latency_ms.toFixed(2) + ' ms';
       }
       refreshStats();
@@ -812,8 +583,8 @@ Click "TRIP_INTERLOCK" to simulate an autonomous agent calling `search_codebase(
 
     async function sendGatewayRequest() {
       const btn = document.getElementById('btn-gw-send');
-      const orig = btn.innerHTML;
-      btn.innerHTML = 'DISPATCHING...';
+      const orig = btn.textContent;
+      btn.textContent = 'Routing...';
 
       const prompt = document.getElementById('gw-prompt').value;
       const bypass_cache = document.getElementById('gw-bypass-cache').checked;
@@ -827,23 +598,23 @@ Click "TRIP_INTERLOCK" to simulate an autonomous agent calling `search_codebase(
         })
       });
       const data = await res.json();
-      btn.innerHTML = orig;
+      btn.textContent = orig;
 
       const vr = data.veriroute;
       lastGatewayArm = vr.router.selected_model;
       lastGatewayPrompt = prompt;
 
       const respBox = document.getElementById('gw-response-box');
-      respBox.style.display = 'block';
+      respBox.classList.remove('hidden');
       respBox.textContent = data.choices[0].message.content;
 
-      document.getElementById('gw-feedback-bar').style.display = 'flex';
-      document.getElementById('gw-telemetry-empty').style.display = 'none';
-      document.getElementById('gw-telemetry-content').style.display = 'block';
+      document.getElementById('gw-feedback-bar').classList.remove('hidden');
+      document.getElementById('gw-telemetry-empty').classList.add('hidden');
+      document.getElementById('gw-telemetry-content').classList.remove('hidden');
 
       document.getElementById('tel-model').textContent = `${vr.router.selected_model}`;
       document.getElementById('tel-domain').textContent = `${vr.router.detected_domain} (${vr.router.complexity_score})`;
-      document.getElementById('tel-cost').textContent = `$${vr.cost_usd.toFixed(5)} (SAVED $${vr.cost_saved_usd.toFixed(5)})`;
+      document.getElementById('tel-cost').textContent = `$${vr.cost_usd.toFixed(5)} (Saved $${vr.cost_saved_usd.toFixed(5)})`;
 
       const armsDiv = document.getElementById('tel-arms-table');
       armsDiv.innerHTML = '';
@@ -851,26 +622,26 @@ Click "TRIP_INTERLOCK" to simulate an autonomous agent calling `search_codebase(
         vr.router.arm_scores.forEach(a => {
           const isChosen = a.arm_id === vr.router.selected_model;
           const row = document.createElement('div');
-          row.style.cssText = `padding: 0.5rem 0.65rem; border: 1px solid ${isChosen ? 'var(--blue)' : 'var(--border)'}; background: ${isChosen ? '#f0f9ff' : '#f8fafc'}; border-radius: 2px; display: flex; justify-content: space-between; align-items: center; font-size: 0.74rem;`;
+          row.className = `p-2.5 rounded-lg border ${isChosen ? 'border-white bg-[#16181c]' : 'border-[#2f3336] bg-black'} flex justify-between items-center text-xs`;
           row.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 0.4rem;">
-              <span class="dot ${isChosen ? 'green' : 'amber'}" style="margin: 0;"></span>
-              <strong style="color: ${isChosen ? 'var(--blue)' : 'var(--text)'};">${a.arm_id}</strong>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full ${isChosen ? 'bg-white' : 'bg-[#536471]'}"></span>
+              <strong class="${isChosen ? 'text-white' : 'text-[#71767b]'}">${a.arm_id}</strong>
             </div>
-            <div style="display: flex; gap: 0.8rem; font-size: 0.72rem; color: var(--text-muted);">
-              <span>E[r]: <strong>${a.expected_reward}</strong></span>
-              <span>BONUS: <strong>+${a.uncertainty_bonus}</strong></span>
-              <span>UCB: <strong style="color: ${isChosen ? 'var(--blue)' : 'var(--text)'}; font-size: 0.78rem;">${a.ucb_score}</strong></span>
+            <div class="flex items-center gap-3 text-[11px] text-[#71767b]">
+              <span>E[r]: <strong class="text-white">${a.expected_reward}</strong></span>
+              <span>Bonus: <strong>+${a.uncertainty_bonus}</strong></span>
+              <span>UCB: <strong class="${isChosen ? 'text-white font-bold' : 'text-[#71767b]'}">${a.ucb_score}</strong></span>
             </div>
           `;
           armsDiv.appendChild(row);
         });
       } else {
-        armsDiv.innerHTML = '<div style="padding: 0.5rem; background: #ecfdf5; border: 1px solid #a7f3d0; color: var(--green); font-size: 0.75rem; border-radius: 2px;">ZERO COMPUTE: Dispatched directly from Verified Semantic Cache ($0.00 cost).</div>';
+        armsDiv.innerHTML = '<div class="p-2.5 rounded-lg bg-[#16181c] border border-[#2f3336] text-white text-xs">Served directly from Verified Semantic Cache ($0 cost).</div>';
       }
 
       document.getElementById('tel-cache-info').textContent =
-        `CACHE_HIT=${vr.cache.cache_hit} | COSINE=${vr.cache.top_cosine_similarity} | REASON=${vr.cache.decision_reason}`;
+        `Cache hit: ${vr.cache.cache_hit} | Cosine: ${vr.cache.top_cosine_similarity} | ${vr.cache.decision_reason}`;
 
       refreshStats();
     }
@@ -892,15 +663,15 @@ Click "TRIP_INTERLOCK" to simulate an autonomous agent calling `search_codebase(
 
     async function runSimulationBatch() {
       const btn = document.getElementById('btn-batch-sim');
-      btn.innerHTML = 'SIMULATING...';
+      btn.textContent = 'Simulating...';
       await fetch('/api/v1/bandit/simulate?rounds=32', {method: 'POST'});
-      btn.innerHTML = '⚡ SIMULATE_32';
+      btn.textContent = 'Simulate 32 requests';
       refreshStats();
     }
 
     async function triggerStuckAgentLoop() {
       const btn = document.getElementById('btn-stuck-loop');
-      btn.textContent = 'INTERCEPTING...';
+      btn.textContent = 'Testing...';
       const stuckMessages = [
         {role: 'user', content: 'Fix the authentication bug in auth_middleware.py'},
         {role: 'assistant', content: '', tool_calls: [{id: 'call_1', type: 'function', function: {name: 'search_codebase', arguments: '{"query": "auth_middleware"}'}}]},
@@ -918,50 +689,50 @@ Click "TRIP_INTERLOCK" to simulate an autonomous agent calling `search_codebase(
         })
       });
       const data = await res.json();
-      btn.textContent = 'TRIP_INTERLOCK';
+      btn.textContent = 'Test loop breaker';
       document.getElementById('loop-demo-output').textContent =
-        `[INTERLOCK STATUS]: LOOP_DETECTED = ${data.veriroute.loop_guard.loop_detected}\n` +
-        `[TACTICAL DIRECTIVE]: ${data.veriroute.loop_guard.action_taken}\n` +
-        `[ESCALATED MODEL ARM]: ${data.veriroute.router.selected_model} (${data.veriroute.router.routing_policy})\n\n` +
-        `[ASSISTANT PAYLOAD]:\n${data.choices[0].message.content}`;
+        `Loop intercepted: ${data.veriroute.loop_guard.loop_detected}\n` +
+        `Directive: ${data.veriroute.loop_guard.action_taken}\n` +
+        `Escalated model: ${data.veriroute.router.selected_model} (${data.veriroute.router.routing_policy})\n\n` +
+        `Output:\n${data.choices[0].message.content}`;
       refreshStats();
     }
 
     async function runFullBenchmarkSuite() {
       const btn = document.getElementById('btn-run-bench');
-      btn.textContent = 'RUNNING BENCHMARKS...';
+      btn.textContent = 'Running benchmarks...';
       btn.disabled = true;
       const res = await fetch('/api/v1/benchmarks/run');
       const data = await res.json();
-      btn.innerHTML = '▶ EXECUTE_BENCHMARK_SUITE';
+      btn.textContent = 'Run benchmark suite';
       btn.disabled = false;
 
-      document.getElementById('bench-output').style.display = 'block';
+      document.getElementById('bench-output').classList.remove('hidden');
       const cb = data.cache_benchmark;
       document.getElementById('bench-cache-summary').innerHTML = `
-        <div style="padding: 0.5rem; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 2px; display: flex; justify-content: space-between; font-size: 0.75rem;">
-          <span style="color: var(--text-muted);">VANILLA VECTOR CACHE FALSE POSITIVES:</span>
-          <strong style="color: var(--red);">${cb.vanilla_cosine_cache.false_positive_rate_pct}% (${cb.vanilla_cosine_cache.false_positives}/${cb.adversarial_negative_pairs} FAILED)</strong>
+        <div class="p-2.5 rounded-lg bg-[#16181c] border border-[#2f3336] flex justify-between items-center">
+          <span class="text-[#71767b]">Standard vector cache false positives:</span>
+          <strong class="text-white">${cb.vanilla_cosine_cache.false_positive_rate_pct}% (${cb.vanilla_cosine_cache.false_positives}/${cb.adversarial_negative_pairs} failed)</strong>
         </div>
-        <div style="padding: 0.5rem; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 2px; display: flex; justify-content: space-between; font-size: 0.75rem;">
-          <span style="color: var(--green);">VERIROUTE TWO-STAGE FALSE POSITIVES:</span>
-          <strong style="color: var(--green);">${cb.veriroute_nli_cache.false_positive_rate_pct}% (${cb.veriroute_nli_cache.false_positives}/${cb.adversarial_negative_pairs} FAILED)</strong>
+        <div class="p-2.5 rounded-lg bg-[#16181c] border border-white/40 flex justify-between items-center">
+          <span class="text-white">VeriRoute two-stage false positives:</span>
+          <strong class="text-white">${cb.veriroute_nli_cache.false_positive_rate_pct}% (${cb.veriroute_nli_cache.false_positives}/${cb.adversarial_negative_pairs} failed)</strong>
         </div>
-        <div style="padding: 0.5rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 2px; display: flex; justify-content: space-between; font-size: 0.75rem;">
-          <span style="color: var(--text-muted);">PARAPHRASE RECALL / PRECISION:</span>
-          <strong style="color: var(--blue);">${cb.veriroute_nli_cache.recall_pct}% REC / ${cb.veriroute_nli_cache.precision_pct}% PREC</strong>
+        <div class="p-2.5 rounded-lg bg-[#16181c] border border-[#2f3336] flex justify-between items-center">
+          <span class="text-[#71767b]">Paraphrase recall / precision:</span>
+          <strong class="text-white">${cb.veriroute_nli_cache.recall_pct}% rec / ${cb.veriroute_nli_cache.precision_pct}% prec</strong>
         </div>
-        <div style="padding: 0.5rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 2px; display: flex; justify-content: space-between; font-size: 0.75rem;">
-          <span style="color: var(--text-muted);">P95 VERIFICATION LATENCY:</span>
-          <strong style="color: #4338ca;">${cb.veriroute_nli_cache.p95_latency_ms} ms</strong>
+        <div class="p-2.5 rounded-lg bg-[#16181c] border border-[#2f3336] flex justify-between items-center">
+          <span class="text-[#71767b]">P95 verification latency:</span>
+          <strong class="text-white">${cb.veriroute_nli_cache.p95_latency_ms} ms</strong>
         </div>
       `;
 
       const bb = data.bandit_benchmark.policies;
       document.getElementById('bench-bandit-summary').innerHTML = Object.entries(bb).map(([k, v]) => `
-        <div style="padding: 0.5rem; background: ${k === 'veriroute_linucb_bandit' ? '#f0f9ff' : '#f8fafc'}; border: 1px solid ${k === 'veriroute_linucb_bandit' ? '#bae6fd' : 'var(--border)'}; border-radius: 2px; display: flex; justify-content: space-between; font-size: 0.75rem;">
-          <strong style="color: ${k === 'veriroute_linucb_bandit' ? 'var(--blue)' : 'var(--text)'};">${k.toUpperCase()}</strong>
-          <span style="color: var(--text-muted);">SAVED: <strong style="color: var(--green);">${v.cost_savings_vs_frontier_pct}%</strong> | PARITY: <strong>${v.quality_parity_vs_frontier_pct}%</strong> | TTFT: ${v.avg_ttft_ms}ms</span>
+        <div class="p-2.5 rounded-lg ${k === 'veriroute_linucb_bandit' ? 'bg-[#16181c] border border-white/40' : 'bg-black border border-[#2f3336]'} flex justify-between items-center text-xs">
+          <span class="font-bold ${k === 'veriroute_linucb_bandit' ? 'text-white' : 'text-[#71767b]'}">${k}</span>
+          <span class="text-[#71767b]">Saved: <strong class="text-white">${v.cost_savings_vs_frontier_pct}%</strong> | Parity: <strong class="text-white">${v.quality_parity_vs_frontier_pct}%</strong> | TTFT: ${v.avg_ttft_ms}ms</span>
         </div>
       `).join('');
       refreshStats();
