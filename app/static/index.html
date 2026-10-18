@@ -1,646 +1,703 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeriRoute // Autonomous LLM Gateway &amp; LinUCB Decision Core</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VeriRoute // Robotic LLM Gateway &amp; LinUCB Dispatch Core</title>
   
-  <!-- Precision Fonts: Space Grotesk & JetBrains Mono -->
+  <!-- JetBrains Mono & Inter fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --carbon-bg: #05070a;
-      --carbon-surface: #0a0e17;
-      --carbon-panel: #0e1422;
-      --border-tech: #192338;
-      --border-tech-glow: #283959;
-      --laser-amber: #ffaa00;
-      --laser-cyan: #00f0ff;
-      --laser-emerald: #00ff88;
-      --laser-rose: #ff2a5f;
+      --bg: #f4f5f8;
+      --bg-soft: #eaedf2;
+      --panel-bg: #ffffff;
+      --panel-header: #f8fafc;
+      --border: #cbd5e1;
+      --border-strong: #94a3b8;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --blue: #0284c7;
+      --green: #059669;
+      --amber: #d97706;
+      --red: #dc2626;
+      --cyan: #0891b2;
+      --purple: #7c3aed;
     }
 
+    * { box-sizing: border-box; }
+
     body {
-      background-color: var(--carbon-bg);
-      color: #d1dced;
-      font-family: 'Space Grotesk', -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+      /* Robotic laboratory blueprint grid */
       background-image: 
-        radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.05) 0%, transparent 55%),
-        linear-gradient(rgba(25, 35, 56, 0.15) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(25, 35, 56, 0.15) 1px, transparent 1px);
-      background-size: 100% 100%, 32px 32px, 32px 32px;
+        linear-gradient(rgba(203, 213, 225, 0.45) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(203, 213, 225, 0.45) 1px, transparent 1px);
+      background-size: 24px 24px;
       background-attachment: fixed;
     }
 
-    .font-mono-tech {
-      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    .mono {
+      font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
       font-feature-settings: "tnum" 1, "zero" 1;
     }
 
-    /* Robotic HUD Chassis & Panels */
-    .tech-panel {
-      background: linear-gradient(180deg, rgba(14, 20, 34, 0.92) 0%, rgba(10, 14, 23, 0.96) 100%);
-      border: 1px solid var(--border-tech);
-      border-radius: 6px;
-      position: relative;
-      box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(0, 240, 255, 0.08);
-      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    /* ---------- CyberArena Terminal Panel Architecture ---------- */
+    .terminal-panel {
+      border: 1px solid var(--border);
+      background: var(--panel-bg);
+      border-radius: 3px;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 6px 16px rgba(15, 23, 42, 0.02);
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
-    .tech-panel:hover {
-      border-color: var(--border-tech-glow);
-    }
-
-    /* Futuristic Corner Brackets */
-    .corner-brackets::before, .corner-brackets::after {
-      content: "";
-      position: absolute;
-      width: 7px;
-      height: 7px;
-      pointer-events: none;
-    }
-    .corner-brackets::before {
-      top: -1px; left: -1px;
-      border-top: 2px solid var(--laser-cyan);
-      border-left: 2px solid var(--laser-cyan);
-    }
-    .corner-brackets::after {
-      bottom: -1px; right: -1px;
-      border-bottom: 2px solid var(--laser-cyan);
-      border-right: 2px solid var(--laser-cyan);
+    .terminal-panel:hover {
+      border-color: var(--border-strong);
     }
 
-    .bracket-amber::before { border-color: var(--laser-amber); }
-    .bracket-amber::after { border-color: var(--laser-amber); }
-
-    /* Precision Tab Controls */
-    .tech-tab {
-      position: relative;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    .terminal-header {
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-header);
+      padding: 0.55rem 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
-    .tech-tab.active {
-      background: rgba(0, 240, 255, 0.12);
+
+    .terminal-body {
+      padding: 1rem 1.15rem;
+    }
+
+    /* Hardware Terminal Status Dots */
+    .dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      margin-left: 4px;
+    }
+    .dot.red { background: #ef4444; border: 1px solid #dc2626; }
+    .dot.amber { background: #f59e0b; border: 1px solid #d97706; }
+    .dot.green { background: #10b981; border: 1px solid #059669; }
+
+    /* ---------- Navigation & Buttons ---------- */
+    .nav-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      padding: 0.65rem 1.5rem;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    .btn {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--text);
       color: #ffffff;
-      border-color: var(--laser-cyan);
-      box-shadow: inset 0 0 14px rgba(0, 240, 255, 0.15), 0 0 12px rgba(0, 240, 255, 0.2);
+      border: 1px solid var(--text);
+      padding: 0.45rem 0.9rem;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      border-radius: 2px;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
-    .tech-tab.active::after {
-      content: "";
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 2px;
-      background: var(--laser-cyan);
-      box-shadow: 0 0 10px var(--laser-cyan);
+    .btn:hover:not(:disabled) {
+      background: #1e293b;
+      border-color: #1e293b;
+      transform: translateY(-1px);
+    }
+    .btn:active:not(:disabled) { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-blue {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #ffffff;
+    }
+    .btn-blue:hover:not(:disabled) {
+      background: #0369a1;
+      border-color: #0369a1;
     }
 
-    /* Radar Beacon Animation */
-    @keyframes radar-pulse {
-      0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.5); transform: scale(0.95); }
-      70% { box-shadow: 0 0 0 8px rgba(0, 255, 136, 0); transform: scale(1.05); }
-      100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); transform: scale(0.95); }
+    .btn-ghost {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: var(--text);
     }
-    .radar-pulse {
-      animation: radar-pulse 2s infinite cubic-bezier(0.24, 0, 0.38, 1);
-    }
-
-    /* Scanline overlay for subtle robotic feel */
-    .scanline-overlay {
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-      background-size: 100% 3px;
-      pointer-events: none;
+    .btn-ghost:hover:not(:disabled) {
+      background: #f1f5f9;
+      border-color: var(--border-strong);
     }
 
-    .gauge-bar {
-      transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    .btn-ghost-active {
+      background: var(--text);
+      color: #ffffff;
+      border-color: var(--text);
     }
+
+    /* Badges */
+    .tech-badge {
+      font-size: 0.72rem;
+      padding: 0.15rem 0.5rem;
+      border: 1px solid;
+      border-radius: 2px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .badge-green { color: var(--green); border-color: var(--green); background: rgba(5, 150, 105, 0.08); }
+    .badge-amber { color: var(--amber); border-color: var(--amber); background: rgba(217, 119, 6, 0.08); }
+    .badge-red   { color: var(--red);   border-color: var(--red);   background: rgba(220, 38, 38, 0.08); }
+    .badge-blue  { color: var(--blue);  border-color: var(--blue);  background: rgba(2, 132, 199, 0.08); }
+    .badge-slate { color: #475569;     border-color: #cbd5e1;     background: #f8fafc; }
+
+    /* Inputs */
+    .field {
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      border-radius: 2px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .field:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+    }
+
+    .progress-bar-container {
+      height: 8px;
+      background: #e2e8f0;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      transition: width 0.4s ease;
+    }
+
+    .tab-view { display: block; }
+    .tab-view.hidden { display: none; }
   </style>
 </head>
-<body class="min-h-screen text-slate-300 antialiased font-sans pb-16">
+<body>
 
-  <!-- HUD Telemetry Ticker (Top Bar) -->
-  <div class="border-b border-cyan-950/60 bg-[#06080e]/95 text-[11px] font-mono-tech text-slate-400 px-6 py-1.5 flex flex-wrap items-center justify-between gap-4 select-none">
-    <div class="flex items-center gap-4">
-      <div class="flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 radar-pulse"></span>
-        <span class="text-emerald-400 font-semibold tracking-wider uppercase">SYS_CORE // ONLINE</span>
-      </div>
-      <span class="text-slate-700">|</span>
-      <span>NODE: <span class="text-slate-200">VR-GATEWAY.01</span></span>
-      <span class="text-slate-700 hidden sm:inline">|</span>
-      <span class="hidden sm:inline">VEC_DIM: <span class="text-cyan-400">R^128 (BI-ENC)</span></span>
-      <span class="text-slate-700 hidden md:inline">|</span>
-      <span class="hidden md:inline">BANDIT: <span class="text-amber-400">LinUCB (α=0.85, d=8)</span></span>
-    </div>
-    <div class="flex items-center gap-3">
-      <span class="text-slate-500">P95_LATENCY: <strong id="top-ticker-lat" class="text-cyan-300">0.75ms</strong></span>
-      <span class="text-slate-700">•</span>
-      <span class="text-slate-500">UPTIME: <strong id="top-ticker-up" class="text-slate-300">LIVE</strong></span>
-    </div>
-  </div>
-
-  <!-- Main Navigation Header -->
-  <header class="border-b border-[#141b2c] bg-[#070b13]/90 backdrop-blur-md sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-      
-      <!-- Logo & Tactical Badge -->
-      <div class="flex items-center gap-3.5">
-        <div class="w-9 h-9 bg-gradient-to-br from-cyan-500 to-blue-600 rounded flex items-center justify-center font-mono-tech font-bold text-white text-base shadow-lg shadow-cyan-500/20 border border-cyan-400/40 relative">
-          <span>VR</span>
-          <span class="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full"></span>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base font-bold tracking-tight text-white uppercase font-mono-tech">VeriRoute Core</h1>
-            <span class="text-[10px] uppercase font-mono-tech px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-700/50">
-              Robotic Dispatch
-            </span>
-          </div>
-          <p class="text-[11px] text-slate-400 font-mono-tech">
-            Two-Stage Entailment Cache &amp; Contextual Decision Interlock
-          </p>
-        </div>
-      </div>
-
-      <!-- Tactical Controls -->
-      <div class="flex items-center gap-2.5 font-mono-tech">
-        <button onclick="runSimulationBatch()" id="btn-batch-sim" class="px-3.5 py-1.5 rounded bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-black transition active:scale-[0.98] shadow-sm shadow-cyan-500/30 flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-          <span>DISPATCH 32 REQ</span>
-        </button>
-
-        <button onclick="resetGateway()" class="px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700 transition active:scale-[0.98]">
-          RESET CORE
-        </button>
-
-        <a href="/docs" target="_blank" class="hidden md:flex items-center gap-1 px-3 py-1.5 rounded bg-slate-900/80 hover:bg-slate-800 text-xs text-cyan-400 border border-slate-700/80 transition">
-          <span>API SPEC ↗</span>
-        </a>
-      </div>
-    </div>
-  </header>
-
-  <main class="max-w-7xl mx-auto px-6 py-6 space-y-6">
-
-    <!-- Telemetry HUD Gauges (Top Strip) -->
-    <section class="grid grid-cols-2 md:grid-cols-6 gap-3 font-mono-tech">
-      
-      <!-- Total Telemetry -->
-      <div class="tech-panel p-3.5 flex flex-col justify-between corner-brackets">
-        <div class="text-[10px] tracking-wider text-slate-400 uppercase">SYS_THROUGHPUT</div>
-        <div class="mt-2 flex items-baseline justify-between">
-          <span id="kpi-requests" class="text-2xl font-bold text-white tnum">0</span>
-          <span class="text-[10px] text-cyan-500/80">REQS</span>
-        </div>
-        <div class="mt-2 w-full bg-slate-800/80 rounded h-1 overflow-hidden">
-          <div class="bg-cyan-400 h-1 w-full opacity-80 shadow-[0_0_8px_#00f0ff]"></div>
-        </div>
-      </div>
-
-      <!-- Cost Mitigation -->
-      <div class="tech-panel p-3.5 flex flex-col justify-between corner-brackets">
-        <div class="text-[10px] tracking-wider text-slate-400 uppercase">TOKEN_COST_SAVINGS</div>
-        <div class="mt-2 flex items-baseline justify-between">
-          <span id="kpi-savings-pct" class="text-2xl font-bold text-emerald-400 tnum">0.0%</span>
-          <span class="text-[10px] text-emerald-500/80">EFFICIENCY</span>
-        </div>
-        <div class="mt-1 text-[10px] text-slate-400 truncate">
-          <span id="kpi-savings-usd">$0.0000 saved</span>
-        </div>
-      </div>
-
-      <!-- Verified Cache Precision -->
-      <div class="tech-panel p-3.5 flex flex-col justify-between corner-brackets">
-        <div class="text-[10px] tracking-wider text-slate-400 uppercase">CACHE_HIT_RATIO</div>
-        <div class="mt-2 flex items-baseline justify-between">
-          <span id="kpi-cache-rate" class="text-2xl font-bold text-cyan-400 tnum">0.0%</span>
-          <span id="kpi-cache-entries" class="text-[10px] text-slate-500">0 ENTRIES</span>
-        </div>
-        <div class="mt-2 w-full bg-slate-800/80 rounded h-1 overflow-hidden">
-          <div id="kpi-cache-bar" class="bg-cyan-400 h-1 gauge-bar" style="width: 0%"></div>
-        </div>
-      </div>
-
-      <!-- Adversarial Invariants Blocked -->
-      <div class="tech-panel p-3.5 flex flex-col justify-between corner-brackets bracket-amber border-amber-500/30">
-        <div class="text-[10px] tracking-wider text-amber-400 uppercase flex items-center justify-between">
-          <span>TRAPS_INTERCEPTED</span>
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-        </div>
-        <div class="mt-2 flex items-baseline justify-between">
-          <span id="kpi-fp-blocked" class="text-2xl font-bold text-amber-400 tnum">0</span>
-          <span class="text-[10px] text-amber-300/70">STAGE-2 NLI</span>
-        </div>
-        <div class="mt-1 text-[10px] text-slate-400">False Positives Nullified</div>
-      </div>
-
-      <!-- P95 Latency Overhead -->
-      <div class="tech-panel p-3.5 flex flex-col justify-between corner-brackets">
-        <div class="text-[10px] tracking-wider text-slate-400 uppercase">GATEWAY_OVERHEAD</div>
-        <div class="mt-2 flex items-baseline justify-between">
-          <span id="kpi-overhead" class="text-2xl font-bold text-indigo-300 tnum">0.0 ms</span>
-          <span class="text-[10px] text-indigo-400/80">P95 INFER</span>
-        </div>
-        <div class="mt-1 text-[10px] text-slate-400">Bi-Enc + UCB Matrix</div>
-      </div>
-
-      <!-- Agent Loops Intercepted -->
-      <div class="tech-panel p-3.5 flex flex-col justify-between corner-brackets">
-        <div class="text-[10px] tracking-wider text-slate-400 uppercase">LOOPS_INTERCEPTED</div>
-        <div class="mt-2 flex items-baseline justify-between">
-          <span id="kpi-loops" class="text-2xl font-bold text-rose-400 tnum">0</span>
-          <span class="text-[10px] text-rose-400/80">CIRCUIT</span>
-        </div>
-        <div class="mt-1 text-[10px] text-slate-400">Infinite Agent Traps</div>
-      </div>
-    </section>
-
-    <!-- Tactical Segmented Tabs -->
-    <div class="flex items-center gap-1.5 p-1 bg-[#090d16] border border-[#182236] rounded-md font-mono-tech text-xs overflow-x-auto">
-      <button onclick="switchTab('tab-cache')" id="btn-tab-cache" class="tech-tab active px-4 py-2 text-slate-300 border border-transparent whitespace-nowrap flex items-center gap-2">
-        <span class="text-cyan-400 font-bold">[01]</span>
-        <span>ADVERSARIAL NLI CACHE RADAR</span>
-      </button>
-
-      <button onclick="switchTab('tab-gateway')" id="btn-tab-gateway" class="tech-tab px-4 py-2 text-slate-400 hover:text-slate-200 border border-transparent whitespace-nowrap flex items-center gap-2">
-        <span class="text-slate-500 font-bold">[02]</span>
-        <span>AUTONOMOUS LINUCB DISPATCHER</span>
-      </button>
-
-      <button onclick="switchTab('tab-bandit')" id="btn-tab-bandit" class="tech-tab px-4 py-2 text-slate-400 hover:text-slate-200 border border-transparent whitespace-nowrap flex items-center gap-2">
-        <span class="text-slate-500 font-bold">[03]</span>
-        <span>BANDIT MATRIX &amp; AGENT INTERLOCK</span>
-      </button>
-
-      <button onclick="switchTab('tab-benchmarks')" id="btn-tab-benchmarks" class="tech-tab px-4 py-2 text-slate-400 hover:text-slate-200 border border-transparent whitespace-nowrap flex items-center gap-2">
-        <span class="text-slate-500 font-bold">[04]</span>
-        <span>PARETO BENCHMARK BENCH</span>
-      </button>
+  <!-- CyberArena Robotic Navigation Bar -->
+  <nav class="nav-bar mono">
+    <div onclick="showTab('tab-cache')" style="cursor: pointer; font-weight: 700; letter-spacing: 0.1em; font-size: 1rem; color: var(--text); display: flex; align-items: center; gap: 0.6rem;">
+      <span>VERI<span style="color: var(--blue);">ROUTE</span></span>
+      <span class="tech-badge badge-slate" id="nav-mode-badge">ROBOTIC GATEWAY // VEC: R^128</span>
     </div>
 
-    <!-- ========================================== -->
-    <!-- TAB 1: ADVERSARIAL NLI CACHE RADAR         -->
-    <!-- ========================================== -->
-    <section id="tab-cache" class="space-y-6">
-      <div class="tech-panel p-6 space-y-6 corner-brackets">
-        
-        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
-          <div>
-            <div class="flex items-center gap-2 font-mono-tech">
-              <span class="text-xs px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800/60 font-semibold">
-                MODULE // INVARIANT VERIFICATION
-              </span>
-              <span class="text-xs text-slate-400">STAGE-1 COSINE vs STAGE-2 NLI CROSS-ENCODER</span>
-            </div>
-            <h2 class="text-lg font-bold text-white tracking-tight mt-1">
-              Adversarial Cache Vulnerability Analyzer
-            </h2>
-          </div>
-          <div class="text-[11px] font-mono-tech text-slate-400 bg-slate-900/90 px-3 py-1.5 rounded border border-slate-800">
-            THRESHOLD: <span class="text-cyan-400 font-bold">τ=0.80</span> // NLI_ENTAIL: <span class="text-emerald-400 font-bold">P≥0.70</span>
-          </div>
-        </div>
+    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+      <button id="nav-btn-cache" onclick="showTab('tab-cache')" class="btn btn-ghost btn-ghost-active">
+        [01] CACHE_RADAR
+      </button>
+      <button id="nav-btn-gateway" onclick="showTab('tab-gateway')" class="btn btn-ghost">
+        [02] LINUCB_DISPATCH
+      </button>
+      <button id="nav-btn-bandit" onclick="showTab('tab-bandit')" class="btn btn-ghost">
+        [03] MATRIX_STATE
+      </button>
+      <button id="nav-btn-benchmarks" onclick="showTab('tab-benchmarks')" class="btn btn-ghost">
+        [04] BENCHMARK_SUITE
+      </button>
 
-        <!-- Tactical Presets -->
-        <div class="space-y-2">
-          <div class="text-[10px] font-mono-tech text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-            <span class="w-1.5 h-1.5 bg-amber-400 rounded-sm"></span>
-            <span>TACTICAL ADVERSARIAL SCENARIOS (CLICK TO SIMULATE)</span>
-          </div>
-          <div class="flex flex-wrap gap-2 font-mono-tech text-xs">
-            <button onclick="loadCachePreset('How do I enable CORS in FastAPI?', 'How do I disable CORS in FastAPI?')" class="px-3 py-1.5 rounded bg-rose-950/40 hover:bg-rose-900/50 border border-rose-500/30 text-rose-300 transition flex items-center gap-1.5">
-              <span class="text-rose-500">▶</span> Antonym Flip: Enable vs Disable CORS
-            </button>
-            <button onclick="loadCachePreset('Transfer $500 to Alice', 'Transfer $500 to Bob')" class="px-3 py-1.5 rounded bg-rose-950/40 hover:bg-rose-900/50 border border-rose-500/30 text-rose-300 transition flex items-center gap-1.5">
-              <span class="text-rose-500">▶</span> Entity Swap: Alice vs Bob ($500)
-            </button>
-            <button onclick="loadCachePreset('Transfer $500 to Alice', 'Transfer $5000 to Alice')" class="px-3 py-1.5 rounded bg-rose-950/40 hover:bg-rose-900/50 border border-rose-500/30 text-rose-300 transition flex items-center gap-1.5">
-              <span class="text-rose-500">▶</span> Numerical Invariant: $500 vs $5000
-            </button>
-            <button onclick="loadCachePreset('Transfer funds from checking to savings', 'Transfer funds from savings to checking')" class="px-3 py-1.5 rounded bg-rose-950/40 hover:bg-rose-900/50 border border-rose-500/30 text-rose-300 transition flex items-center gap-1.5">
-              <span class="text-rose-500">▶</span> Directional Role Reversal
-            </button>
-            <button onclick="loadCachePreset('How do I enable CORS in FastAPI?', 'What is the way to turn on cross-origin in FastAPI?')" class="px-3 py-1.5 rounded bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/30 text-emerald-300 transition flex items-center gap-1.5">
-              <span class="text-emerald-400">✓</span> Safe Paraphrase: Cross-Origin Enable
-            </button>
-          </div>
-        </div>
+      <span class="tech-badge badge-amber" id="nav-p95-badge">P95: 0.75ms</span>
 
-        <!-- Query Comparator Inputs -->
-        <div class="grid md:grid-cols-2 gap-4 font-mono-tech">
-          <div class="space-y-1.5">
-            <label class="block text-xs font-semibold text-slate-300 flex items-center justify-between">
-              <span>REFERENCE_ENTRY (STORED IN EMBEDDING SPACE)</span>
-              <span class="text-[10px] text-slate-500">INDEX_ID: #CACHE_REF</span>
-            </label>
-            <input id="cache-seed-input" type="text" value="How do I enable CORS in FastAPI?" class="w-full px-3.5 py-2.5 rounded bg-[#070b13] border border-[#1b253b] text-xs text-cyan-300 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition" />
-          </div>
+      <button onclick="runSimulationBatch()" id="btn-batch-sim" class="btn btn-blue">
+        ⚡ SIMULATE_32
+      </button>
+      <button onclick="resetGateway()" class="btn btn-ghost">
+        RESET
+      </button>
+    </div>
+  </nav>
 
-          <div class="space-y-1.5">
-            <label class="block text-xs font-semibold text-slate-300 flex items-center justify-between">
-              <span>INCOMING_QUERY (EVALUATING INGRESS)</span>
-              <span class="text-[10px] text-slate-500">RUNTIME INFERENCE</span>
-            </label>
-            <input id="cache-test-input" type="text" value="How do I disable CORS in FastAPI?" class="w-full px-3.5 py-2.5 rounded bg-[#070b13] border border-[#1b253b] text-xs text-amber-300 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 transition" />
-          </div>
-        </div>
+  <!-- Main Container -->
+  <div style="max-width: 1240px; margin: 0 auto; padding: 1.5rem 1.25rem;">
 
-        <div class="flex items-center gap-4">
-          <button onclick="compareCachePair()" id="btn-run-cache-eval" class="px-5 py-2.5 rounded bg-cyan-500 hover:bg-cyan-400 text-black font-mono-tech font-bold text-xs uppercase tracking-wider transition active:scale-[0.98] shadow-lg shadow-cyan-500/25 flex items-center gap-2">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <span>Execute Invariant Radar Scan</span>
-          </button>
-          <span class="text-xs font-mono-tech text-slate-500">Evaluates cosine similarity vs Stage-2 joint NLI cross-encoder logits</span>
-        </div>
-
-        <!-- Comparative Output Hologram -->
-        <div id="cache-compare-output" class="grid md:grid-cols-2 gap-4 pt-2 font-mono-tech">
+    <!-- OPERATIVE_STATUS TerminalPanel (Just like CyberArena) -->
+    <div class="terminal-panel">
+      <div class="terminal-header">
+        <span class="mono" style="color: var(--blue); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.05em;">
+          ROBOTIC_OPERATIVE_STATUS // REAL-TIME DISPATCH TELEMETRY
+        </span>
+        <div style="flex: 1;"></div>
+        <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
+      </div>
+      <div class="terminal-body mono">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1.25rem; align-items: center;">
           
-          <!-- Baseline Card -->
-          <div class="p-5 rounded-lg bg-[#070a12] border border-slate-800 space-y-4 relative corner-brackets">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                BASELINE: RAW BI-ENCODER CACHE
-              </span>
-              <span class="text-[10px] text-slate-500">STAGE-1 ONLY</span>
-            </div>
-
-            <div id="vanilla-verdict-badge" class="px-3 py-2 rounded text-xs font-bold"></div>
-
-            <div class="space-y-3 text-xs">
-              <div>
-                <div class="flex justify-between text-slate-400 mb-1">
-                  <span>TOPICAL COSINE SIMILARITY:</span>
-                  <span id="cmp-cosine" class="text-white font-bold">0.0000</span>
-                </div>
-                <div class="w-full bg-slate-900 rounded h-1.5 overflow-hidden">
-                  <div id="cmp-cosine-bar" class="bg-slate-500 h-1.5 rounded gauge-bar" style="width: 0%"></div>
-                </div>
-                <div class="flex justify-between text-[10px] text-slate-500 mt-1">
-                  <span>TRIGGER THRESHOLD: τ ≥ 0.80</span>
-                  <span id="cmp-cosine-delta"></span>
-                </div>
-              </div>
-
-              <div class="p-3 rounded bg-slate-900/60 border border-slate-800/80 text-[11px] text-slate-400 leading-relaxed font-sans" id="vanilla-explanation">
-              </div>
-            </div>
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">REQUESTS_INGRESS</div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: var(--text);" id="kpi-requests">0</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">HTTP / SSE CHANNELS</div>
           </div>
 
-          <!-- VeriRoute Two-Stage Card -->
-          <div class="p-5 rounded-lg bg-[#070a12] border border-cyan-500/40 space-y-4 relative corner-brackets shadow-[0_0_20px_rgba(0,240,255,0.06)]">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-              <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-                <span>VERIROUTE TWO-STAGE INTERLOCK</span>
-              </span>
-              <span id="cmp-latency" class="text-[10px] text-cyan-300">0.0 ms INFER</span>
-            </div>
-
-            <div id="veriroute-verdict-badge" class="px-3 py-2 rounded text-xs font-bold"></div>
-
-            <div class="space-y-3 text-xs">
-              <!-- NLI Probabilities -->
-              <div>
-                <div class="flex justify-between text-slate-400 mb-1">
-                  <span>STAGE-2 NLI PREDICTION:</span>
-                  <span id="cmp-nli-label" class="font-bold text-white uppercase">--</span>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2 text-xs pt-1">
-                  <div class="p-2.5 rounded bg-slate-900/90 border border-emerald-950/80">
-                    <span class="text-slate-400 text-[10px] block">P(ENTAILMENT)</span>
-                    <span id="cmp-ent" class="text-emerald-400 font-bold text-sm">--</span>
-                  </div>
-                  <div class="p-2.5 rounded bg-slate-900/90 border border-rose-950/80">
-                    <span class="text-slate-400 text-[10px] block">P(CONTRADICTION)</span>
-                    <span id="cmp-con" class="text-rose-400 font-bold text-sm">--</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Constraint Diagnostics -->
-              <div class="pt-2 border-t border-slate-800">
-                <span class="text-[10px] uppercase tracking-wider text-slate-400 block mb-1">DETERMINISTIC INVARIANT STATUS:</span>
-                <div id="cmp-constraints" class="p-2.5 rounded bg-slate-900/90 border border-slate-800 text-[11px] text-cyan-200 truncate">--</div>
-              </div>
-            </div>
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">COST_MITIGATION</div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: var(--green);" id="kpi-savings-pct">0.0%</div>
+            <div style="font-size: 0.72rem; color: var(--green);" id="kpi-savings-usd">$0.0000 SAVED</div>
           </div>
+
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">VERIFIED_CACHE_HIT</div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: var(--blue);" id="kpi-cache-rate">0.0%</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);" id="kpi-cache-entries">0 ENTRIES ACTIVE</div>
+          </div>
+
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">ADVERSARIAL_FPS_BLOCKED</div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: var(--amber);" id="kpi-fp-blocked">0</div>
+            <div style="font-size: 0.72rem; color: var(--amber);">CAUGHT BY STAGE-2 NLI</div>
+          </div>
+
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">GATEWAY_P95_OVERHEAD</div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: #4338ca;" id="kpi-overhead">0.0 ms</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">BI-ENC + LINUCB MATH</div>
+          </div>
+
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">LOOPS_QUARANTINED</div>
+            <div style="font-size: 1.6rem; font-weight: 700; color: var(--red);" id="kpi-loops">0</div>
+            <div style="font-size: 0.72rem; color: var(--red);">STATEFUL INTERLOCK</div>
+          </div>
+
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- ========================================== -->
-    <!-- TAB 2: AUTONOMOUS LINUCB DISPATCHER        -->
-    <!-- ========================================== -->
-    <section id="tab-gateway" class="space-y-6 hidden">
-      <div class="grid lg:grid-cols-12 gap-6 font-mono-tech">
-        
-        <!-- Left: Robotic Prompt Ingress -->
-        <div class="lg:col-span-6 tech-panel p-6 space-y-4 corner-brackets">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h2 class="text-sm font-bold text-white uppercase tracking-wider">COMMAND INGRESS // /v1/chat/completions</h2>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">SSE ENABLED</span>
-          </div>
-          <p class="text-xs text-slate-400 font-sans">
-            The router extracts an 8-dimensional prompt complexity vector $\mathbf{x}_t \in \mathbb{R}^8$, evaluates Upper Confidence Bounds across all model arms, and minimizes latency and token expenditure.
+    <!-- ======================================================== -->
+    <!-- TAB 1: ADVERSARIAL CACHE RADAR                          -->
+    <!-- ======================================================== -->
+    <div id="tab-cache" class="tab-view">
+      <div class="terminal-panel">
+        <div class="terminal-header">
+          <span class="mono" style="color: var(--blue); font-weight: 700; font-size: 0.85rem;">
+            [MODULE_01] // ADVERSARIAL CACHE RADAR (STAGE-1 BI-ENCODER vs STAGE-2 NLI CROSS-ENCODER)
+          </span>
+          <div style="flex: 1;"></div>
+          <span class="tech-badge badge-blue">COSINE_THRESHOLD: 0.80</span>
+          <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
+        </div>
+        <div class="terminal-body mono">
+          
+          <p style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-top: 0; line-height: 1.5;">
+            Standard semantic vector caches (e.g. vanilla GPTCache) rely purely on cosine similarity. Opposite instructions like <code style="background: #f1f5f9; padding: 2px 5px; border: 1px solid var(--border); color: var(--text); font-weight: bold;">enable</code> vs <code style="background: #f1f5f9; padding: 2px 5px; border: 1px solid var(--border); color: var(--text); font-weight: bold;">disable</code> share <strong>&gt;0.80</strong> cosine similarity, returning critical false positives. VeriRoute adds deterministic invariant checking and bidirectional NLI cross-encoder verification in &lt;1ms.
           </p>
 
-          <!-- Complexity Tier Presets -->
-          <div class="space-y-1.5">
-            <div class="text-[10px] text-slate-500 uppercase tracking-wider">COMPLEXITY WORKLOAD PROFILES:</div>
-            <div class="flex flex-wrap gap-1.5 text-xs">
-              <button onclick="setGatewayPrompt('What does HTTP stand for? Explain in one sentence.')" class="px-2.5 py-1 rounded bg-[#070b13] hover:bg-slate-800 border border-slate-800 text-cyan-300 transition">
-                TIER-1: Low QA
+          <!-- Preset Scenario Filter Buttons (CyberArena style) -->
+          <div style="margin: 1.25rem 0;">
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 0.05em;">
+              &gt; TACTICAL_ADVERSARIAL_SCENARIOS:
+            </div>
+            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+              <button onclick="loadCachePreset('How do I enable CORS in FastAPI?', 'How do I disable CORS in FastAPI?')" class="btn btn-ghost" style="font-size: 0.75rem;">
+                <span style="color: var(--red);">▶</span> ANTONYM: ENABLE vs DISABLE CORS
               </button>
-              <button onclick="setGatewayPrompt('Write a Python function `def reverse_words(s: str)` that reverses words in a string.')" class="px-2.5 py-1 rounded bg-[#070b13] hover:bg-slate-800 border border-slate-800 text-blue-300 transition">
-                TIER-2: Code Syntax
+              <button onclick="loadCachePreset('Transfer $500 to Alice', 'Transfer $500 to Bob')" class="btn btn-ghost" style="font-size: 0.75rem;">
+                <span style="color: var(--red);">▶</span> ENTITY: ALICE vs BOB ($500)
               </button>
-              <button onclick="setGatewayPrompt('Design a multi-region active-active distributed consensus architecture using Raft and Paxos with sharding, vector clocks, idempotency, backpressure, and CAP theorem trade-offs.')" class="px-2.5 py-1 rounded bg-[#070b13] hover:bg-slate-800 border border-slate-800 text-purple-300 transition">
-                TIER-3: Distributed Arch
+              <button onclick="loadCachePreset('Transfer $500 to Alice', 'Transfer $5000 to Alice')" class="btn btn-ghost" style="font-size: 0.75rem;">
+                <span style="color: var(--red);">▶</span> NUMBER: $500 vs $5000
               </button>
-              <button onclick="setGatewayPrompt('Prove by strong induction and derive the exact amortized time complexity O(n log n) for a self-balancing tree with dynamic programming state transitions and formal invariant verification.')" class="px-2.5 py-1 rounded bg-[#070b13] hover:bg-slate-800 border border-slate-800 text-amber-300 transition">
-                TIER-4: Formal Math Proof
+              <button onclick="loadCachePreset('Transfer funds from checking to savings', 'Transfer funds from savings to checking')" class="btn btn-ghost" style="font-size: 0.75rem;">
+                <span style="color: var(--red);">▶</span> ROLE REVERSAL: CHECKING ⇄ SAVINGS
+              </button>
+              <button onclick="loadCachePreset('How do I enable CORS in FastAPI?', 'What is the way to turn on cross-origin in FastAPI?')" class="btn btn-ghost" style="font-size: 0.75rem;">
+                <span style="color: var(--green);">✓</span> PARAPHRASE: TURN ON CROSS-ORIGIN
               </button>
             </div>
           </div>
 
-          <div class="space-y-1.5">
-            <label class="block text-xs font-semibold text-slate-300">USER INGRESS BUFFER</label>
-            <textarea id="gw-prompt" rows="4" class="w-full px-3.5 py-2.5 rounded bg-[#070b13] border border-[#1b253b] text-xs text-slate-200 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition leading-relaxed">Design a multi-region active-active distributed consensus architecture using Raft and Paxos with sharding, vector clocks, idempotency, backpressure, and CAP theorem trade-offs.</textarea>
-          </div>
-
-          <div class="flex items-center justify-between pt-1">
-            <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
-              <input id="gw-bypass-cache" type="checkbox" class="rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-0" />
-              <span>FORCE CACHE BYPASS</span>
-            </label>
-
-            <button onclick="sendGatewayRequest()" id="btn-gw-send" class="px-4 py-2 rounded bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs uppercase tracking-wider transition active:scale-[0.98] shadow-md shadow-cyan-500/25 flex items-center gap-1.5">
-              <span>DISPATCH REQ</span>
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-          </div>
-
-          <div id="gw-response-box" class="p-4 rounded bg-[#070b13] border border-slate-800 text-xs text-slate-200 whitespace-pre-wrap leading-relaxed hidden"></div>
-
-          <!-- Real-Time Reward Loop -->
-          <div id="gw-feedback-bar" class="p-3 rounded bg-slate-900/60 border border-slate-800 flex items-center justify-between hidden">
-            <span class="text-xs text-slate-400">INGEST ONLINE REWARD TO MODEL ARM:</span>
-            <div class="flex items-center gap-2">
-              <button onclick="sendFeedback(0.98)" class="px-2.5 py-1 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/40 text-xs text-emerald-300 transition">
-                + OPTIMAL (r=0.98)
-              </button>
-              <button onclick="sendFeedback(0.20)" class="px-2.5 py-1 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-500/40 text-xs text-rose-300 transition">
-                - DEGRADED (r=0.20)
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Right: Telemetry Waterfall & LinUCB Math -->
-        <div class="lg:col-span-6 tech-panel p-6 space-y-4 corner-brackets">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider">DISPATCH TELEMETRY &amp; UCB MATRIX</h3>
-            <span class="text-[10px] text-cyan-400">ONLINE LINUCB ENGINE</span>
-          </div>
-
-          <div id="gw-telemetry-empty" class="text-xs text-slate-500 py-16 text-center font-sans">
-            Dispatch a request on the left to inspect feature vector extraction $\mathbf{x}_t$, exploration ellipsoid radius, and arm selection.
-          </div>
-
-          <div id="gw-telemetry-content" class="space-y-4 hidden text-xs">
-            <div class="grid grid-cols-3 gap-2.5">
-              <div class="p-3 rounded bg-[#070b13] border border-slate-800">
-                <span class="text-[10px] text-slate-500 block">SELECTED_ARM</span>
-                <span id="tel-model" class="font-bold text-cyan-400 text-xs mt-0.5 block truncate">--</span>
-              </div>
-              <div class="p-3 rounded bg-[#070b13] border border-slate-800">
-                <span class="text-[10px] text-slate-500 block">COMPLEXITY_SCORE</span>
-                <span id="tel-domain" class="font-bold text-white text-xs mt-0.5 block truncate">--</span>
-              </div>
-              <div class="p-3 rounded bg-[#070b13] border border-slate-800">
-                <span class="text-[10px] text-slate-500 block">COST_MITIGATED</span>
-                <span id="tel-cost" class="font-bold text-emerald-400 text-xs mt-0.5 block truncate">--</span>
-              </div>
-            </div>
-
-            <!-- UCB Arm Ranking -->
-            <div class="p-4 rounded bg-[#070b13] border border-slate-800 space-y-2.5">
-              <div class="flex items-center justify-between text-slate-400 border-b border-slate-800/80 pb-2">
-                <span class="font-bold text-[10px] uppercase tracking-wider">MODEL ARMS // UCB EQUATION: $\hat{\theta}^\top x + \alpha \sqrt{x^\top A^{-1} x} - \lambda \cdot \text{TTFT}$</span>
-              </div>
-              <div id="tel-arms-table" class="space-y-2"></div>
-            </div>
-
-            <div class="p-3.5 rounded bg-[#070b13] border border-slate-800 text-[11px] space-y-1">
-              <div class="text-[10px] text-slate-500 uppercase tracking-wider">PIPELINE ROUTE STATE:</div>
-              <div id="tel-cache-info" class="text-slate-300">--</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- TAB 3: BANDIT MATRIX & AGENT INTERLOCK     -->
-    <!-- ========================================== -->
-    <section id="tab-bandit" class="space-y-6 hidden">
-      <div class="grid md:grid-cols-2 gap-6 font-mono-tech">
-        
-        <!-- Stateful Agent Loop Breaker -->
-        <div class="tech-panel p-6 space-y-4 corner-brackets bracket-amber">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <!-- Query Input Fields -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; margin: 1.25rem 0;">
             <div>
-              <h2 class="text-sm font-bold text-white uppercase tracking-wider">AGENT TRAJECTORY INTERLOCK</h2>
-              <p class="text-xs text-slate-400 font-sans mt-0.5">
-                Quarantines multi-turn agent execution loops before token budget exhaustion occurs.
-              </p>
+              <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">
+                &gt; REFERENCE_QUERY (STORED IN EMBEDDING SPACE)
+              </label>
+              <input id="cache-seed-input" class="field" value="How do I enable CORS in FastAPI?">
             </div>
-            <button onclick="triggerStuckAgentLoop()" id="btn-stuck-loop" class="px-3 py-1.5 rounded bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white transition active:scale-[0.98] shadow-sm shadow-rose-600/30 shrink-0">
-              TRIP LOOP INTERLOCK
+            <div>
+              <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">
+                &gt; INCOMING_QUERY (EVALUATING INGRESS)
+              </label>
+              <input id="cache-test-input" class="field" value="How do I disable CORS in FastAPI?">
+            </div>
+          </div>
+
+          <div style="margin: 1.25rem 0; display: flex; align-items: center; gap: 0.8rem;">
+            <button onclick="compareCachePair()" id="btn-run-cache-eval" class="btn btn-blue" style="font-size: 0.8rem; padding: 0.55rem 1.1rem;">
+              EXECUTE_INVARIANT_RADAR_SCAN
             </button>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Compares Stage-1 cosine similarity against Stage-2 joint NLI cross-encoder logits</span>
           </div>
 
-          <div id="loop-demo-output" class="p-4 rounded bg-[#070b13] border border-slate-800 text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">
-Click "TRIP LOOP INTERLOCK" to dispatch a trajectory where an autonomous agent repeatedly executes `search_codebase({"query": "auth_middleware"})` 3 consecutive times. The gateway detects the repetitive trajectory signature, injects a system-level recovery instruction, and escalates execution to Claude 3.5 Sonnet.
-          </div>
-        </div>
-
-        <!-- LinUCB Learned Weights Theta_hat -->
-        <div class="tech-panel p-6 space-y-4 corner-brackets">
-          <div class="border-b border-slate-800 pb-3">
-            <h2 class="text-sm font-bold text-white uppercase tracking-wider">RIDGE REGRESSION PARAMETERS ($\hat{\boldsymbol{\theta}}_a = \mathbf{A}_a^{-1}\mathbf{b}_a$)</h2>
-            <p class="text-xs text-slate-400 font-sans mt-0.5">
-              Persistent online covariance matrices ($\mathbf{A}_a \in \mathbb{R}^{8 \times 8}$) stored in SQLite.
-            </p>
-          </div>
-          <div id="bandit-arms-cards" class="space-y-3 text-xs"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- TAB 4: PARETO BENCHMARK BENCH              -->
-    <!-- ========================================== -->
-    <section id="tab-benchmarks" class="space-y-6 hidden">
-      <div class="tech-panel p-6 space-y-6 corner-brackets font-mono-tech">
-        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
-          <div>
-            <h2 class="text-base font-bold text-white uppercase tracking-wider">AUTOMATED PARETO BENCHMARK BENCH</h2>
-            <p class="text-xs text-slate-400 font-sans mt-0.5">
-              Full verification suite: 27 adversarial cache pairs (negations, numbers, entities) and 96 multi-tier bandit workloads.
-            </p>
-          </div>
-          <button onclick="runFullBenchmarkSuite()" id="btn-run-bench" class="px-5 py-2.5 rounded bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs uppercase tracking-wider transition active:scale-[0.98] shadow-md shadow-emerald-500/25 flex items-center gap-2">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            <span>EXECUTE BENCHMARK SUITE</span>
-          </button>
-        </div>
-
-        <div id="bench-output" class="space-y-6 hidden">
-          <div class="grid md:grid-cols-2 gap-6">
+          <!-- Comparative Terminal Panels Output -->
+          <div id="cache-compare-output" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.25rem; margin-top: 1.5rem;">
             
-            <!-- Benchmark 1 -->
-            <div class="p-5 rounded bg-[#070a12] border border-slate-800 space-y-3 corner-brackets">
-              <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider block">
-                BENCHMARK 1 // ADVERSARIAL CACHE PRECISION (27 PAIRS)
-              </span>
-              <div id="bench-cache-summary" class="space-y-2 text-xs"></div>
+            <!-- Left: Baseline Panel -->
+            <div class="terminal-panel" style="margin: 0;">
+              <div class="terminal-header">
+                <span style="color: var(--text); font-weight: 700; font-size: 0.8rem;">
+                  BASELINE // RAW BI-ENCODER CACHE
+                </span>
+                <div style="flex: 1;"></div>
+                <span class="tech-badge badge-slate">STAGE_1_ONLY</span>
+              </div>
+              <div class="terminal-body">
+                <div id="vanilla-verdict-badge" style="margin-bottom: 1rem;"></div>
+
+                <div style="margin-bottom: 0.8rem;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.35rem;">
+                    <span style="color: var(--text-muted);">TOPICAL COSINE SIMILARITY:</span>
+                    <strong id="cmp-cosine" style="color: var(--text);">0.0000</strong>
+                  </div>
+                  <div class="progress-bar-container">
+                    <div id="cmp-cosine-bar" class="progress-bar-fill" style="width: 0%; background: #64748b;"></div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+                    <span>THRESHOLD: τ ≥ 0.80</span>
+                    <span id="cmp-cosine-delta"></span>
+                  </div>
+                </div>
+
+                <div id="vanilla-explanation" style="font-family: 'Inter', sans-serif; font-size: 0.78rem; color: var(--text-muted); background: #f8fafc; border: 1px solid var(--border); padding: 0.65rem; border-radius: 2px; line-height: 1.45;"></div>
+              </div>
             </div>
 
-            <!-- Benchmark 2 -->
-            <div class="p-5 rounded bg-[#070a12] border border-slate-800 space-y-3 corner-brackets">
-              <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider block">
-                BENCHMARK 2 // LINUCB PARETO CONVERGENCE (96 REQS)
-              </span>
-              <div id="bench-bandit-summary" class="space-y-2 text-xs"></div>
+            <!-- Right: VeriRoute Two-Stage Panel -->
+            <div class="terminal-panel" style="margin: 0; border-color: var(--blue);">
+              <div class="terminal-header" style="background: #f0f9ff; border-bottom-color: #bae6fd;">
+                <span style="color: var(--blue); font-weight: 700; font-size: 0.8rem;">
+                  VERIROUTE // TWO-STAGE ENTAILMENT CACHE
+                </span>
+                <div style="flex: 1;"></div>
+                <span id="cmp-latency" class="tech-badge badge-blue">0.0 ms INFER</span>
+              </div>
+              <div class="terminal-body">
+                <div id="veriroute-verdict-badge" style="margin-bottom: 1rem;"></div>
+
+                <div style="margin-bottom: 0.8rem;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.35rem;">
+                    <span style="color: var(--text-muted);">STAGE-2 NLI PREDICTION:</span>
+                    <strong id="cmp-nli-label" style="color: var(--text);">--</strong>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.5rem;">
+                    <div style="border: 1px solid #a7f3d0; background: #ecfdf5; padding: 0.5rem; border-radius: 2px;">
+                      <div style="font-size: 0.68rem; color: var(--green); font-weight: 700;">P(ENTAILMENT)</div>
+                      <div id="cmp-ent" style="font-size: 1.15rem; font-weight: 700; color: var(--green);">--</div>
+                    </div>
+                    <div style="border: 1px solid #fecdd3; background: #fff1f2; padding: 0.5rem; border-radius: 2px;">
+                      <div style="font-size: 0.68rem; color: var(--red); font-weight: 700;">P(CONTRADICTION)</div>
+                      <div id="cmp-con" style="font-size: 1.15rem; font-weight: 700; color: var(--red);">--</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 0.8rem; border-top: 1px solid var(--border); padding-top: 0.6rem;">
+                  <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 0.25rem;">
+                    DETERMINISTIC INVARIANT STATUS:
+                  </span>
+                  <div id="cmp-constraints" style="font-size: 0.75rem; color: var(--text); background: #f8fafc; border: 1px solid var(--border); padding: 0.5rem; border-radius: 2px;">
+                    --
+                  </div>
+                </div>
+              </div>
             </div>
+
           </div>
+
         </div>
       </div>
-    </section>
-  </main>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: AUTONOMOUS LINUCB DISPATCHER                     -->
+    <!-- ======================================================== -->
+    <div id="tab-gateway" class="tab-view hidden">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.25rem;">
+        
+        <!-- Left: Command Ingress Terminal -->
+        <div class="terminal-panel">
+          <div class="terminal-header">
+            <span class="mono" style="color: var(--blue); font-weight: 700; font-size: 0.85rem;">
+              [MODULE_02] // COMMAND INGRESS (/v1/chat/completions)
+            </span>
+            <div style="flex: 1;"></div>
+            <span class="tech-badge badge-slate">SSE_ENABLED</span>
+            <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
+          </div>
+          <div class="terminal-body mono">
+            
+            <p style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
+              Extracts context vector $\mathbf{x}_t \in \mathbb{R}^8$, evaluates LinUCB upper confidence bounds, balances cost/quality, and incorporates live provider TTFT penalties.
+            </p>
+
+            <!-- Preset Buttons -->
+            <div style="margin: 1rem 0;">
+              <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; margin-bottom: 0.4rem;">
+                &gt; WORKLOAD_PROFILES:
+              </div>
+              <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                <button onclick="setGatewayPrompt('What does HTTP stand for? Explain in one sentence.')" class="btn btn-ghost" style="font-size: 0.72rem; padding: 0.3rem 0.6rem;">
+                  QA_BASIC
+                </button>
+                <button onclick="setGatewayPrompt('Write a Python function `def reverse_words(s: str)` that reverses words in a string.')" class="btn btn-ghost" style="font-size: 0.72rem; padding: 0.3rem 0.6rem;">
+                  CODE_SYNTAX
+                </button>
+                <button onclick="setGatewayPrompt('Design a multi-region active-active distributed consensus architecture using Raft and Paxos with sharding, vector clocks, idempotency, backpressure, and CAP theorem trade-offs.')" class="btn btn-ghost" style="font-size: 0.72rem; padding: 0.3rem 0.6rem;">
+                  DISTRIBUTED_ARCH
+                </button>
+                <button onclick="setGatewayPrompt('Prove by strong induction and derive the exact amortized time complexity O(n log n) for a self-balancing tree with dynamic programming state transitions and formal invariant verification.')" class="btn btn-ghost" style="font-size: 0.72rem; padding: 0.3rem 0.6rem;">
+                  MATH_PROOF
+                </button>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.35rem;">
+                &gt; USER_INGRESS_BUFFER:
+              </label>
+              <textarea id="gw-prompt" rows="4" class="field" style="resize: vertical; font-size: 0.78rem;">Design a multi-region active-active distributed consensus architecture using Raft and Paxos with sharding, vector clocks, idempotency, backpressure, and CAP theorem trade-offs.</textarea>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+              <label style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input id="gw-bypass-cache" type="checkbox">
+                <span>BYPASS_SEMANTIC_CACHE</span>
+              </label>
+
+              <button onclick="sendGatewayRequest()" id="btn-gw-send" class="btn btn-blue" style="font-size: 0.8rem;">
+                DISPATCH_REQUEST &gt;&gt;
+              </button>
+            </div>
+
+            <!-- Assistant Output Box -->
+            <div id="gw-response-box" style="margin-top: 1.25rem; padding: 0.85rem; background: #f8fafc; border: 1px solid var(--border); font-size: 0.78rem; line-height: 1.5; border-radius: 2px; white-space: pre-wrap; display: none;"></div>
+
+            <!-- Online Feedback Loop -->
+            <div id="gw-feedback-bar" style="margin-top: 1rem; padding: 0.75rem; background: #f1f5f9; border: 1px solid var(--border); display: none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+              <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">INGEST REWARD TO MODEL ARM:</span>
+              <div style="display: flex; gap: 0.4rem;">
+                <button onclick="sendFeedback(0.98)" class="btn btn-ghost" style="color: var(--green); border-color: var(--green); font-size: 0.72rem; padding: 0.25rem 0.5rem;">
+                  + HIGH_QUALITY (0.98)
+                </button>
+                <button onclick="sendFeedback(0.20)" class="btn btn-ghost" style="color: var(--red); border-color: var(--red); font-size: 0.72rem; padding: 0.25rem 0.5rem;">
+                  - LOW_QUALITY (0.20)
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right: Telemetry Waterfall Terminal -->
+        <div class="terminal-panel">
+          <div class="terminal-header">
+            <span class="mono" style="color: var(--blue); font-weight: 700; font-size: 0.85rem;">
+              TELEMETRY_WATERFALL // LINUCB MATRIX RANKING
+            </span>
+            <div style="flex: 1;"></div>
+            <span class="tech-badge badge-slate">ONLINE_SOLVER</span>
+            <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
+          </div>
+          <div class="terminal-body mono">
+            
+            <div id="gw-telemetry-empty" style="padding: 3rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">
+              &gt; WAITING FOR REQUEST INGRESS...<br>
+              <span style="font-size: 0.75rem;">Dispatch a prompt to view LinUCB confidence bounds and telemetry.</span>
+            </div>
+
+            <div id="gw-telemetry-content" style="display: none;">
+              
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 1rem;">
+                <div style="padding: 0.6rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 2px;">
+                  <div style="font-size: 0.68rem; color: var(--text-muted);">DISPATCHED_MODEL</div>
+                  <div id="tel-model" style="font-size: 0.82rem; font-weight: 700; color: var(--blue); margin-top: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">--</div>
+                </div>
+                <div style="padding: 0.6rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 2px;">
+                  <div style="font-size: 0.68rem; color: var(--text-muted);">COMPLEXITY</div>
+                  <div id="tel-domain" style="font-size: 0.82rem; font-weight: 700; color: var(--text); margin-top: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">--</div>
+                </div>
+                <div style="padding: 0.6rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 2px;">
+                  <div style="font-size: 0.68rem; color: var(--text-muted);">SAVED_USD</div>
+                  <div id="tel-cost" style="font-size: 0.82rem; font-weight: 700; color: var(--green); margin-top: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">--</div>
+                </div>
+              </div>
+
+              <!-- Arm ranking list -->
+              <div style="border: 1px solid var(--border); border-radius: 2px; padding: 0.8rem; margin-bottom: 0.8rem; background: #ffffff;">
+                <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; margin-bottom: 0.5rem;">
+                  MODEL ARMS RANKING // UCB = θ̂ᵀx + α√(xᵀA⁻¹x) - λ·TTFT
+                </div>
+                <div id="tel-arms-table" style="display: flex; flex-direction: column; gap: 0.4rem;"></div>
+              </div>
+
+              <div style="font-size: 0.72rem; color: var(--text-muted); background: #f8fafc; border: 1px solid var(--border); padding: 0.6rem; border-radius: 2px;" id="tel-cache-info">
+                --
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: BANDIT MATRIX & AGENT INTERLOCK                  -->
+    <!-- ======================================================== -->
+    <div id="tab-bandit" class="tab-view hidden">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.25rem;">
+        
+        <!-- Left: Agent Loop Quarantine -->
+        <div class="terminal-panel">
+          <div class="terminal-header">
+            <span class="mono" style="color: var(--red); font-weight: 700; font-size: 0.85rem;">
+              [MODULE_03] // AGENT TRAJECTORY INTERLOCK (STATEFUL CIRCUIT BREAKER)
+            </span>
+            <div style="flex: 1;"></div>
+            <button onclick="triggerStuckAgentLoop()" id="btn-stuck-loop" class="btn" style="background: var(--red); border-color: var(--red); font-size: 0.72rem; padding: 0.25rem 0.6rem;">
+              TRIP_INTERLOCK
+            </button>
+            <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
+          </div>
+          <div class="terminal-body mono">
+            
+            <p style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
+              Tracks multi-turn agent tool-call signatures across conversation traces. When identical/failing actions occur $\ge 3$ times, it injects a corrective directive and forces frontier escalation.
+            </p>
+
+            <div id="loop-demo-output" style="padding: 0.85rem; background: #f8fafc; border: 1px solid var(--border); font-size: 0.76rem; line-height: 1.5; border-radius: 2px; white-space: pre-wrap;">
+Click "TRIP_INTERLOCK" to simulate an autonomous agent calling `search_codebase({"query": "auth_middleware"})` 3 consecutive times. The circuit breaker intercepts the loop and escalates to Claude 3.5 Sonnet.
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right: Bandit Matrix Parameters -->
+        <div class="terminal-panel">
+          <div class="terminal-header">
+            <span class="mono" style="color: var(--blue); font-weight: 700; font-size: 0.85rem;">
+              LEARNED RIDGE REGRESSION PARAMETERS (θ̂ = A⁻¹b)
+            </span>
+            <div style="flex: 1;"></div>
+            <span class="tech-badge badge-slate">DIM=8</span>
+            <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
+          </div>
+          <div class="terminal-body mono">
+            
+            <p style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
+              Online covariance matrices ($\mathbf{A}_a \in \mathbb{R}^{8 \times 8}$) and reward vectors ($\mathbf{b}_a \in \mathbb{R}^8$) persisted in SQLite (`data/veriroute_state.db`).
+            </p>
+
+            <div id="bandit-arms-cards" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB 4: PARETO BENCHMARK BENCH                           -->
+    <!-- ======================================================== -->
+    <div id="tab-benchmarks" class="tab-view hidden">
+      <div class="terminal-panel">
+        <div class="terminal-header">
+          <span class="mono" style="color: var(--green); font-weight: 700; font-size: 0.85rem;">
+            [MODULE_04] // AUTOMATED PARETO BENCHMARK SUITE
+          </span>
+          <div style="flex: 1;"></div>
+          <button onclick="runFullBenchmarkSuite()" id="btn-run-bench" class="btn btn-blue" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+            ▶ EXECUTE_BENCHMARK_SUITE
+          </button>
+          <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
+        </div>
+        <div class="terminal-body mono">
+          
+          <p style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
+            Runs 27 adversarial cache pairs (negations, numbers, entities) and 96 multi-tier bandit routing workloads to evaluate false-positive reduction, cost savings, and quality parity.
+          </p>
+
+          <div id="bench-output" style="display: none; margin-top: 1.5rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.25rem;">
+              
+              <!-- Cache Benchmark Card -->
+              <div class="terminal-panel" style="margin: 0;">
+                <div class="terminal-header">
+                  <span style="font-size: 0.78rem; font-weight: 700; color: var(--blue);">
+                    BENCHMARK 1 // ADVERSARIAL CACHE PRECISION (27 PAIRS)
+                  </span>
+                </div>
+                <div class="terminal-body" id="bench-cache-summary" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+              </div>
+
+              <!-- Bandit Benchmark Card -->
+              <div class="terminal-panel" style="margin: 0;">
+                <div class="terminal-header">
+                  <span style="font-size: 0.78rem; font-weight: 700; color: var(--green);">
+                    BENCHMARK 2 // LINUCB PARETO CONVERGENCE (96 REQS)
+                  </span>
+                </div>
+                <div class="terminal-body" id="bench-bandit-summary" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
 
   <script>
     let lastGatewayArm = null;
     let lastGatewayPrompt = null;
 
-    function switchTab(tabId) {
+    function showTab(tabId) {
       ['tab-cache', 'tab-gateway', 'tab-bandit', 'tab-benchmarks'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
-        document.getElementById('btn-' + id).classList.remove('active');
-        document.getElementById('btn-' + id).classList.add('text-slate-400');
-        document.getElementById('btn-' + id).classList.remove('text-slate-200');
+        const navBtn = document.getElementById('nav-btn-' + id.replace('tab-', ''));
+        if (navBtn) {
+          navBtn.classList.remove('btn-ghost-active');
+        }
       });
       document.getElementById(tabId).classList.remove('hidden');
-      const activeBtn = document.getElementById('btn-' + tabId);
-      activeBtn.classList.add('active');
-      activeBtn.classList.add('text-slate-200');
-      activeBtn.classList.remove('text-slate-400');
+      const activeNav = document.getElementById('nav-btn-' + tabId.replace('tab-', ''));
+      if (activeNav) {
+        activeNav.classList.add('btn-ghost-active');
+      }
       refreshStats();
     }
 
@@ -651,13 +708,12 @@ Click "TRIP LOOP INTERLOCK" to dispatch a trajectory where an autonomous agent r
         const m = data.metrics;
         document.getElementById('kpi-requests').textContent = m.total_requests;
         document.getElementById('kpi-savings-pct').textContent = m.cost_savings_pct.toFixed(1) + '%';
-        document.getElementById('kpi-savings-usd').textContent = '$' + m.total_cost_saved_usd.toFixed(4) + ' saved';
+        document.getElementById('kpi-savings-usd').textContent = '$' + m.total_cost_saved_usd.toFixed(4) + ' SAVED';
         document.getElementById('kpi-cache-rate').textContent = m.cache_hit_rate_pct.toFixed(1) + '%';
-        document.getElementById('kpi-cache-bar').style.width = Math.min(100, m.cache_hit_rate_pct) + '%';
-        document.getElementById('kpi-cache-entries').textContent = data.cache.entries_count + ' ENTRIES';
+        document.getElementById('kpi-cache-entries').textContent = data.cache.entries_count + ' ENTRIES ACTIVE';
         document.getElementById('kpi-fp-blocked').textContent = data.cache.false_positives_blocked;
         document.getElementById('kpi-overhead').textContent = m.gateway_overhead_p95_ms.toFixed(2) + ' ms';
-        document.getElementById('top-ticker-lat').textContent = m.gateway_overhead_p95_ms.toFixed(2) + 'ms';
+        document.getElementById('nav-p95-badge').textContent = 'P95: ' + m.gateway_overhead_p95_ms.toFixed(2) + 'ms';
         document.getElementById('kpi-loops').textContent = data.loop_breaker.total_loops_broken;
 
         // Render Bandit Arms in Tab 3
@@ -665,13 +721,13 @@ Click "TRIP LOOP INTERLOCK" to dispatch a trajectory where an autonomous agent r
         armsContainer.innerHTML = '';
         Object.entries(data.bandit.arms).forEach(([armId, info]) => {
           const card = document.createElement('div');
-          card.className = 'p-3.5 rounded bg-[#070b13] border border-slate-800 space-y-2';
+          card.style.cssText = 'padding: 0.75rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 2px;';
           card.innerHTML = `
-            <div class="flex justify-between items-center text-xs">
-              <span class="font-bold text-cyan-400">${info.display_name}</span>
-              <span class="text-slate-400">PULLS: <strong class="text-white">${info.pulls}</strong> | E[r]: <strong class="text-emerald-400">${info.avg_reward}</strong> | TTFT: ${info.ema_ttft_ms}ms</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <strong style="color: var(--blue); font-size: 0.8rem;">${info.display_name}</strong>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">PULLS: <strong>${info.pulls}</strong> | E[r]: <strong style="color: var(--green);">${info.avg_reward}</strong> | TTFT: ${info.ema_ttft_ms}ms</span>
             </div>
-            <div class="text-[10px] text-slate-300 bg-black/60 p-2 rounded border border-slate-900 leading-relaxed overflow-x-auto">
+            <div style="font-size: 0.7rem; color: var(--text); background: #ffffff; border: 1px solid var(--border); padding: 0.45rem; border-radius: 2px; overflow-x: auto;">
               ${JSON.stringify(info.learned_theta, null, 2)}
             </div>
           `;
@@ -691,7 +747,7 @@ Click "TRIP LOOP INTERLOCK" to dispatch a trajectory where an autonomous agent r
     async function compareCachePair() {
       const btn = document.getElementById('btn-run-cache-eval');
       const orig = btn.innerHTML;
-      btn.innerHTML = '<span>SCANNING INVARIANTS...</span>';
+      btn.innerHTML = 'SCANNING...';
 
       const seed_query = document.getElementById('cache-seed-input').value;
       const test_query = document.getElementById('cache-test-input').value;
@@ -703,8 +759,6 @@ Click "TRIP LOOP INTERLOCK" to dispatch a trajectory where an autonomous agent r
       const data = await res.json();
       btn.innerHTML = orig;
 
-      document.getElementById('cache-compare-output').classList.remove('hidden');
-
       const sim = data.cosine_similarity;
       document.getElementById('cmp-cosine').textContent = sim.toFixed(4);
       document.getElementById('cmp-cosine-bar').style.width = Math.min(100, Math.round(sim * 100)) + '%';
@@ -714,32 +768,26 @@ Click "TRIP LOOP INTERLOCK" to dispatch a trajectory where an autonomous agent r
       const vr = data.veriroute_two_stage_cache;
 
       if (data.vanilla_cosine_cache.would_hit && vr.false_positive_prevented) {
-        vBadge.className = 'px-3 py-2 rounded text-xs font-bold bg-rose-950/80 text-rose-300 border border-rose-500/50 flex items-center justify-between';
-        vBadge.innerHTML = '<span>⚠ FALSE POSITIVE CACHE HIT (CRITICAL BUG)</span><span class="text-[10px]">COSINE ≥ 0.80</span>';
+        vBadge.innerHTML = '<span class="tech-badge badge-red" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">⚠ FALSE POSITIVE CACHE HIT (CRITICAL BUG)</span>';
         vExp.textContent = 'Vanilla vector cache returned an erroneous cached response because dense embeddings cluster opposite actions in identical semantic subspaces (>0.80 cosine similarity).';
-        document.getElementById('cmp-cosine-bar').className = 'bg-rose-500 h-1.5 rounded gauge-bar shadow-[0_0_8px_#ff2a5f]';
+        document.getElementById('cmp-cosine-bar').style.background = '#ef4444';
       } else if (data.vanilla_cosine_cache.would_hit) {
-        vBadge.className = 'px-3 py-2 rounded text-xs font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/50 flex items-center justify-between';
-        vBadge.innerHTML = '<span>✓ CACHE HIT</span><span class="text-[10px]">COSINE ≥ 0.80</span>';
+        vBadge.innerHTML = '<span class="tech-badge badge-green" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">✓ CACHE HIT (COSINE ≥ 0.80)</span>';
         vExp.textContent = 'Cosine similarity passed the threshold and matched topical subspace.';
-        document.getElementById('cmp-cosine-bar').className = 'bg-emerald-500 h-1.5 rounded gauge-bar shadow-[0_0_8px_#00ff88]';
+        document.getElementById('cmp-cosine-bar').style.background = '#10b981';
       } else {
-        vBadge.className = 'px-3 py-2 rounded text-xs font-bold bg-slate-900 text-slate-400 border border-slate-800 flex items-center justify-between';
-        vBadge.innerHTML = '<span>CACHE MISS</span><span class="text-[10px]">COSINE &lt; 0.80</span>';
+        vBadge.innerHTML = '<span class="tech-badge badge-slate" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">CACHE MISS (COSINE &lt; 0.80)</span>';
         vExp.textContent = 'Below Stage-1 cosine threshold.';
-        document.getElementById('cmp-cosine-bar').className = 'bg-slate-500 h-1.5 rounded gauge-bar';
+        document.getElementById('cmp-cosine-bar').style.background = '#64748b';
       }
 
       const vrBadge = document.getElementById('veriroute-verdict-badge');
       if (vr.cache_hit) {
-        vrBadge.className = 'px-3 py-2 rounded text-xs font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/50 flex items-center justify-between';
-        vrBadge.innerHTML = '<span>✓ VERIFIED PARAPHRASE HIT</span><span class="text-[10px]">BIDIRECTIONAL ENTAILMENT</span>';
+        vrBadge.innerHTML = '<span class="tech-badge badge-green" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">✓ VERIFIED SAFE PARAPHRASE HIT</span>';
       } else if (vr.false_positive_prevented) {
-        vrBadge.className = 'px-3 py-2 rounded text-xs font-bold bg-amber-950/80 text-amber-300 border border-amber-500/50 flex items-center justify-between';
-        vrBadge.innerHTML = '<span>🛡 BLOCKED FALSE POSITIVE</span><span class="text-[10px]">CONTRADICTION INTERCEPTED</span>';
+        vrBadge.innerHTML = '<span class="tech-badge badge-amber" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">🛡 BLOCKED FALSE POSITIVE (INTERCEPTED)</span>';
       } else {
-        vrBadge.className = 'px-3 py-2 rounded text-xs font-bold bg-slate-900 text-slate-400 border border-slate-800 flex items-center justify-between';
-        vrBadge.innerHTML = '<span>STAGE-1 MISS</span><span class="text-[10px]">BELOW COSINE τ</span>';
+        vrBadge.innerHTML = '<span class="tech-badge badge-slate" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">STAGE-1 MISS</span>';
       }
 
       if (vr.stage2_nli) {
@@ -765,7 +813,7 @@ Click "TRIP LOOP INTERLOCK" to dispatch a trajectory where an autonomous agent r
     async function sendGatewayRequest() {
       const btn = document.getElementById('btn-gw-send');
       const orig = btn.innerHTML;
-      btn.innerHTML = '<span>DISPATCHING...</span>';
+      btn.innerHTML = 'DISPATCHING...';
 
       const prompt = document.getElementById('gw-prompt').value;
       const bypass_cache = document.getElementById('gw-bypass-cache').checked;
@@ -786,16 +834,16 @@ Click "TRIP LOOP INTERLOCK" to dispatch a trajectory where an autonomous agent r
       lastGatewayPrompt = prompt;
 
       const respBox = document.getElementById('gw-response-box');
-      respBox.classList.remove('hidden');
+      respBox.style.display = 'block';
       respBox.textContent = data.choices[0].message.content;
 
-      document.getElementById('gw-feedback-bar').classList.remove('hidden');
-      document.getElementById('gw-telemetry-empty').classList.add('hidden');
-      document.getElementById('gw-telemetry-content').classList.remove('hidden');
+      document.getElementById('gw-feedback-bar').style.display = 'flex';
+      document.getElementById('gw-telemetry-empty').style.display = 'none';
+      document.getElementById('gw-telemetry-content').style.display = 'block';
 
       document.getElementById('tel-model').textContent = `${vr.router.selected_model}`;
       document.getElementById('tel-domain').textContent = `${vr.router.detected_domain} (${vr.router.complexity_score})`;
-      document.getElementById('tel-cost').textContent = `$${vr.cost_usd.toFixed(5)} (Saved $${vr.cost_saved_usd.toFixed(5)})`;
+      document.getElementById('tel-cost').textContent = `$${vr.cost_usd.toFixed(5)} (SAVED $${vr.cost_saved_usd.toFixed(5)})`;
 
       const armsDiv = document.getElementById('tel-arms-table');
       armsDiv.innerHTML = '';
@@ -803,26 +851,26 @@ Click "TRIP LOOP INTERLOCK" to dispatch a trajectory where an autonomous agent r
         vr.router.arm_scores.forEach(a => {
           const isChosen = a.arm_id === vr.router.selected_model;
           const row = document.createElement('div');
-          row.className = `p-2.5 rounded border ${isChosen ? 'border-cyan-500/50 bg-cyan-950/20' : 'border-slate-800 bg-slate-900/40'} flex justify-between items-center text-xs`;
+          row.style.cssText = `padding: 0.5rem 0.65rem; border: 1px solid ${isChosen ? 'var(--blue)' : 'var(--border)'}; background: ${isChosen ? '#f0f9ff' : '#f8fafc'}; border-radius: 2px; display: flex; justify-content: space-between; align-items: center; font-size: 0.74rem;`;
           row.innerHTML = `
-            <div class="flex items-center gap-2">
-              <span class="w-1.5 h-1.5 rounded-full ${isChosen ? 'bg-cyan-400' : 'bg-slate-600'}"></span>
-              <span class="${isChosen ? 'font-bold text-cyan-300' : 'text-slate-400'}">${a.arm_id}</span>
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+              <span class="dot ${isChosen ? 'green' : 'amber'}" style="margin: 0;"></span>
+              <strong style="color: ${isChosen ? 'var(--blue)' : 'var(--text)'};">${a.arm_id}</strong>
             </div>
-            <div class="flex items-center gap-3 text-[11px] text-slate-400">
-              <span>E[r]: <strong class="text-white">${a.expected_reward}</strong></span>
-              <span>Bonus: <strong class="text-cyan-300">+${a.uncertainty_bonus}</strong></span>
-              <span>UCB: <strong class="${isChosen ? 'text-cyan-400' : 'text-slate-300'} font-bold">${a.ucb_score}</strong></span>
+            <div style="display: flex; gap: 0.8rem; font-size: 0.72rem; color: var(--text-muted);">
+              <span>E[r]: <strong>${a.expected_reward}</strong></span>
+              <span>BONUS: <strong>+${a.uncertainty_bonus}</strong></span>
+              <span>UCB: <strong style="color: ${isChosen ? 'var(--blue)' : 'var(--text)'}; font-size: 0.78rem;">${a.ucb_score}</strong></span>
             </div>
           `;
           armsDiv.appendChild(row);
         });
       } else {
-        armsDiv.innerHTML = '<div class="p-2.5 rounded bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs">ZERO COMPUTE: Dispatched directly from Verified Semantic Cache ($0.00 cost).</div>';
+        armsDiv.innerHTML = '<div style="padding: 0.5rem; background: #ecfdf5; border: 1px solid #a7f3d0; color: var(--green); font-size: 0.75rem; border-radius: 2px;">ZERO COMPUTE: Dispatched directly from Verified Semantic Cache ($0.00 cost).</div>';
       }
 
       document.getElementById('tel-cache-info').textContent =
-        `HIT=${vr.cache.cache_hit} | COSINE=${vr.cache.top_cosine_similarity} | REASON=${vr.cache.decision_reason}`;
+        `CACHE_HIT=${vr.cache.cache_hit} | COSINE=${vr.cache.top_cosine_similarity} | REASON=${vr.cache.decision_reason}`;
 
       refreshStats();
     }
@@ -844,9 +892,9 @@ Click "TRIP LOOP INTERLOCK" to dispatch a trajectory where an autonomous agent r
 
     async function runSimulationBatch() {
       const btn = document.getElementById('btn-batch-sim');
-      btn.innerHTML = '<span>DISPATCHING 32...</span>';
+      btn.innerHTML = 'SIMULATING...';
       await fetch('/api/v1/bandit/simulate?rounds=32', {method: 'POST'});
-      btn.innerHTML = '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span>DISPATCH 32 REQ</span>';
+      btn.innerHTML = '⚡ SIMULATE_32';
       refreshStats();
     }
 
@@ -870,50 +918,50 @@ Click "TRIP LOOP INTERLOCK" to dispatch a trajectory where an autonomous agent r
         })
       });
       const data = await res.json();
-      btn.textContent = 'TRIP LOOP INTERLOCK';
+      btn.textContent = 'TRIP_INTERLOCK';
       document.getElementById('loop-demo-output').textContent =
-        `[CIRCUIT INTERLOCK STATUS]: LOOP_DETECTED = ${data.veriroute.loop_guard.loop_detected}\n` +
+        `[INTERLOCK STATUS]: LOOP_DETECTED = ${data.veriroute.loop_guard.loop_detected}\n` +
         `[TACTICAL DIRECTIVE]: ${data.veriroute.loop_guard.action_taken}\n` +
         `[ESCALATED MODEL ARM]: ${data.veriroute.router.selected_model} (${data.veriroute.router.routing_policy})\n\n` +
-        `[INTERCEPTED ASSISTANT PAYLOAD]:\n${data.choices[0].message.content}`;
+        `[ASSISTANT PAYLOAD]:\n${data.choices[0].message.content}`;
       refreshStats();
     }
 
     async function runFullBenchmarkSuite() {
       const btn = document.getElementById('btn-run-bench');
-      btn.textContent = 'EXECUTING PARETO SUITE...';
+      btn.textContent = 'RUNNING BENCHMARKS...';
       btn.disabled = true;
       const res = await fetch('/api/v1/benchmarks/run');
       const data = await res.json();
-      btn.innerHTML = '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg><span>EXECUTE BENCHMARK SUITE</span>';
+      btn.innerHTML = '▶ EXECUTE_BENCHMARK_SUITE';
       btn.disabled = false;
 
-      document.getElementById('bench-output').classList.remove('hidden');
+      document.getElementById('bench-output').style.display = 'block';
       const cb = data.cache_benchmark;
       document.getElementById('bench-cache-summary').innerHTML = `
-        <div class="p-2.5 rounded bg-slate-900 border border-slate-800 flex justify-between items-center">
-          <span class="text-slate-400">VANILLA VECTOR CACHE FALSE POSITIVES:</span>
-          <strong class="text-rose-400 font-bold">${cb.vanilla_cosine_cache.false_positive_rate_pct}% (${cb.vanilla_cosine_cache.false_positives}/${cb.adversarial_negative_pairs} FAILED)</strong>
+        <div style="padding: 0.5rem; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 2px; display: flex; justify-content: space-between; font-size: 0.75rem;">
+          <span style="color: var(--text-muted);">VANILLA VECTOR CACHE FALSE POSITIVES:</span>
+          <strong style="color: var(--red);">${cb.vanilla_cosine_cache.false_positive_rate_pct}% (${cb.vanilla_cosine_cache.false_positives}/${cb.adversarial_negative_pairs} FAILED)</strong>
         </div>
-        <div class="p-2.5 rounded bg-emerald-950/40 border border-emerald-500/40 flex justify-between items-center">
-          <span class="text-emerald-300">VERIROUTE TWO-STAGE FALSE POSITIVES:</span>
-          <strong class="text-emerald-400 font-bold">${cb.veriroute_nli_cache.false_positive_rate_pct}% (${cb.veriroute_nli_cache.false_positives}/${cb.adversarial_negative_pairs} FAILED)</strong>
+        <div style="padding: 0.5rem; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 2px; display: flex; justify-content: space-between; font-size: 0.75rem;">
+          <span style="color: var(--green);">VERIROUTE TWO-STAGE FALSE POSITIVES:</span>
+          <strong style="color: var(--green);">${cb.veriroute_nli_cache.false_positive_rate_pct}% (${cb.veriroute_nli_cache.false_positives}/${cb.adversarial_negative_pairs} FAILED)</strong>
         </div>
-        <div class="p-2.5 rounded bg-slate-900 border border-slate-800 flex justify-between items-center">
-          <span class="text-slate-400">PARAPHRASE RECALL / PRECISION:</span>
-          <strong class="text-cyan-400 font-bold">${cb.veriroute_nli_cache.recall_pct}% REC / ${cb.veriroute_nli_cache.precision_pct}% PREC</strong>
+        <div style="padding: 0.5rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 2px; display: flex; justify-content: space-between; font-size: 0.75rem;">
+          <span style="color: var(--text-muted);">PARAPHRASE RECALL / PRECISION:</span>
+          <strong style="color: var(--blue);">${cb.veriroute_nli_cache.recall_pct}% REC / ${cb.veriroute_nli_cache.precision_pct}% PREC</strong>
         </div>
-        <div class="p-2.5 rounded bg-slate-900 border border-slate-800 flex justify-between items-center">
-          <span class="text-slate-400">P95 VERIFICATION LATENCY:</span>
-          <strong class="text-cyan-300 font-bold">${cb.veriroute_nli_cache.p95_latency_ms} ms</strong>
+        <div style="padding: 0.5rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 2px; display: flex; justify-content: space-between; font-size: 0.75rem;">
+          <span style="color: var(--text-muted);">P95 VERIFICATION LATENCY:</span>
+          <strong style="color: #4338ca;">${cb.veriroute_nli_cache.p95_latency_ms} ms</strong>
         </div>
       `;
 
       const bb = data.bandit_benchmark.policies;
       document.getElementById('bench-bandit-summary').innerHTML = Object.entries(bb).map(([k, v]) => `
-        <div class="p-2.5 rounded ${k === 'veriroute_linucb_bandit' ? 'bg-cyan-950/40 border border-cyan-500/40' : 'bg-slate-900 border border-slate-800'} flex justify-between items-center text-xs">
-          <span class="font-bold ${k === 'veriroute_linucb_bandit' ? 'text-cyan-300' : 'text-slate-300'}">${k.toUpperCase()}</span>
-          <span class="text-slate-400">SAVINGS: <strong class="text-emerald-400">${v.cost_savings_vs_frontier_pct}%</strong> | PARITY: <strong class="text-white">${v.quality_parity_vs_frontier_pct}%</strong> | TTFT: ${v.avg_ttft_ms}ms</span>
+        <div style="padding: 0.5rem; background: ${k === 'veriroute_linucb_bandit' ? '#f0f9ff' : '#f8fafc'}; border: 1px solid ${k === 'veriroute_linucb_bandit' ? '#bae6fd' : 'var(--border)'}; border-radius: 2px; display: flex; justify-content: space-between; font-size: 0.75rem;">
+          <strong style="color: ${k === 'veriroute_linucb_bandit' ? 'var(--blue)' : 'var(--text)'};">${k.toUpperCase()}</strong>
+          <span style="color: var(--text-muted);">SAVED: <strong style="color: var(--green);">${v.cost_savings_vs_frontier_pct}%</strong> | PARITY: <strong>${v.quality_parity_vs_frontier_pct}%</strong> | TTFT: ${v.avg_ttft_ms}ms</span>
         </div>
       `).join('');
       refreshStats();
