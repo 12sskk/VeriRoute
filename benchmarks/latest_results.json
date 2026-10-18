@@ -1,0 +1,628 @@
+{
+  "generated_at": "2026-10-18T00:11:18Z",
+  "cache_benchmark": {
+    "total_pairs": 27,
+    "positive_paraphrase_pairs": 8,
+    "adversarial_negative_pairs": 19,
+    "vanilla_cosine_cache": {
+      "true_positives": 8,
+      "false_positives": 16,
+      "true_negatives": 3,
+      "false_negatives": 0,
+      "false_positive_rate_pct": 84.21,
+      "precision_pct": 33.33,
+      "recall_pct": 100.0
+    },
+    "veriroute_nli_cache": {
+      "true_positives": 8,
+      "false_positives": 0,
+      "true_negatives": 19,
+      "false_negatives": 0,
+      "false_positive_rate_pct": 0.0,
+      "precision_pct": 100.0,
+      "recall_pct": 100.0,
+      "p50_latency_ms": 0.38,
+      "p95_latency_ms": 0.61
+    },
+    "pair_details": [
+      {
+        "category": "paraphrase",
+        "seed_query": "How do I enable CORS in FastAPI?",
+        "test_query": "What is the way to turn on cross-origin in FastAPI?",
+        "ground_truth_should_hit": true,
+        "cosine_similarity": 0.8337,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": true,
+        "nli_label": "ENTAILMENT",
+        "entailment_prob": 0.9636,
+        "contradiction_prob": 0.006,
+        "rejection_reason": null,
+        "latency_ms": 3.311
+      },
+      {
+        "category": "paraphrase",
+        "seed_query": "Transfer $500 to Alice",
+        "test_query": "Please wire $500 to Alice",
+        "ground_truth_should_hit": true,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": true,
+        "nli_label": "ENTAILMENT",
+        "entailment_prob": 0.9929,
+        "contradiction_prob": 0.0017,
+        "rejection_reason": null,
+        "latency_ms": 0.584
+      },
+      {
+        "category": "paraphrase",
+        "seed_query": "How to increase connection pool size in Postgres?",
+        "test_query": "How can I raise the connection pool size in PostgreSQL?",
+        "ground_truth_should_hit": true,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": true,
+        "nli_label": "ENTAILMENT",
+        "entailment_prob": 0.9929,
+        "contradiction_prob": 0.0017,
+        "rejection_reason": null,
+        "latency_ms": 0.536
+      },
+      {
+        "category": "paraphrase",
+        "seed_query": "Write a Python function to encrypt a string",
+        "test_query": "Create a py function for encrypting a string",
+        "ground_truth_should_hit": true,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": true,
+        "nli_label": "ENTAILMENT",
+        "entailment_prob": 0.9929,
+        "contradiction_prob": 0.0017,
+        "rejection_reason": null,
+        "latency_ms": 0.455
+      },
+      {
+        "category": "paraphrase",
+        "seed_query": "Sort the database records in ascending order",
+        "test_query": "Order the db records ascending",
+        "ground_truth_should_hit": true,
+        "cosine_similarity": 0.9429,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": true,
+        "nli_label": "ENTAILMENT",
+        "entailment_prob": 0.9907,
+        "contradiction_prob": 0.0021,
+        "rejection_reason": null,
+        "latency_ms": 0.402
+      },
+      {
+        "category": "paraphrase",
+        "seed_query": "Delete the temporary cache files in Linux",
+        "test_query": "How do I remove temporary cache files in Linux?",
+        "ground_truth_should_hit": true,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": true,
+        "nli_label": "ENTAILMENT",
+        "entailment_prob": 0.9929,
+        "contradiction_prob": 0.0017,
+        "rejection_reason": null,
+        "latency_ms": 0.549
+      },
+      {
+        "category": "paraphrase",
+        "seed_query": "Explain how JWT authentication works",
+        "test_query": "Describe how JWT auth works",
+        "ground_truth_should_hit": true,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": true,
+        "nli_label": "ENTAILMENT",
+        "entailment_prob": 0.9929,
+        "contradiction_prob": 0.0017,
+        "rejection_reason": null,
+        "latency_ms": 0.386
+      },
+      {
+        "category": "paraphrase",
+        "seed_query": "Upload the backup archive to AWS",
+        "test_query": "How can I push the backup archive to AWS?",
+        "ground_truth_should_hit": true,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": true,
+        "nli_label": "ENTAILMENT",
+        "entailment_prob": 0.9929,
+        "contradiction_prob": 0.0017,
+        "rejection_reason": null,
+        "latency_ms": 0.421
+      },
+      {
+        "category": "antonym_negation",
+        "seed_query": "How do I enable CORS in FastAPI?",
+        "test_query": "How do I disable CORS in FastAPI?",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0036,
+        "contradiction_prob": 0.983,
+        "rejection_reason": "polarity_or_antonym_conflict(('disable', 'enable'))",
+        "latency_ms": 0.167
+      },
+      {
+        "category": "antonym_negation",
+        "seed_query": "How do I enable CORS in FastAPI?",
+        "test_query": "How do I not enable CORS in FastAPI?",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0036,
+        "contradiction_prob": 0.983,
+        "rejection_reason": "polarity_or_antonym_conflict(('negated', 'affirmative'))",
+        "latency_ms": 0.385
+      },
+      {
+        "category": "antonym_negation",
+        "seed_query": "How to increase connection pool size in Postgres?",
+        "test_query": "How to decrease connection pool size in Postgres?",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0036,
+        "contradiction_prob": 0.983,
+        "rejection_reason": "polarity_or_antonym_conflict(('decrease', 'increase'))",
+        "latency_ms": 0.299
+      },
+      {
+        "category": "antonym_negation",
+        "seed_query": "Write a Python function to encrypt a string",
+        "test_query": "Write a Python function to decrypt a string",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0036,
+        "contradiction_prob": 0.983,
+        "rejection_reason": "polarity_or_antonym_conflict(('decrypt', 'encrypt'))",
+        "latency_ms": 0.21
+      },
+      {
+        "category": "antonym_negation",
+        "seed_query": "Sort the database records in ascending order",
+        "test_query": "Sort the database records in descending order",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0036,
+        "contradiction_prob": 0.983,
+        "rejection_reason": "polarity_or_antonym_conflict(('descending', 'ascending'))",
+        "latency_ms": 0.203
+      },
+      {
+        "category": "antonym_negation",
+        "seed_query": "Create the users table in Postgres",
+        "test_query": "Drop the users table in Postgres",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0036,
+        "contradiction_prob": 0.983,
+        "rejection_reason": "polarity_or_antonym_conflict(('drop', 'create'))",
+        "latency_ms": 0.276
+      },
+      {
+        "category": "antonym_negation",
+        "seed_query": "Upload the backup archive to AWS",
+        "test_query": "Download the backup archive from AWS",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0036,
+        "contradiction_prob": 0.983,
+        "rejection_reason": "polarity_or_antonym_conflict(('download', 'upload'))",
+        "latency_ms": 0.318
+      },
+      {
+        "category": "antonym_negation",
+        "seed_query": "Allow public access to the Redis cluster",
+        "test_query": "Block public access to the Redis cluster",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0036,
+        "contradiction_prob": 0.983,
+        "rejection_reason": "polarity_or_antonym_conflict(('block', 'allow'))",
+        "latency_ms": 0.182
+      },
+      {
+        "category": "number_swap",
+        "seed_query": "Transfer $500 to Alice",
+        "test_query": "Transfer $5000 to Alice",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0059,
+        "contradiction_prob": 0.965,
+        "rejection_reason": "numerical_mismatch(['5000'] != ['500'])",
+        "latency_ms": 0.383
+      },
+      {
+        "category": "number_swap",
+        "seed_query": "Transfer $500 to Alice",
+        "test_query": "Transfer $50 to Alice",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0059,
+        "contradiction_prob": 0.965,
+        "rejection_reason": "numerical_mismatch(['50'] != ['500'])",
+        "latency_ms": 0.617
+      },
+      {
+        "category": "number_swap",
+        "seed_query": "Configure a 30 second timeout in FastAPI",
+        "test_query": "Configure a 120 second timeout in FastAPI",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0059,
+        "contradiction_prob": 0.965,
+        "rejection_reason": "numerical_mismatch(['120'] != ['30'])",
+        "latency_ms": 0.463
+      },
+      {
+        "category": "number_swap",
+        "seed_query": "Limit maximum retries to 3 in Python",
+        "test_query": "Limit maximum retries to 10 in Python",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0059,
+        "contradiction_prob": 0.965,
+        "rejection_reason": "numerical_mismatch(['10'] != ['3'])",
+        "latency_ms": 0.433
+      },
+      {
+        "category": "entity_role_swap",
+        "seed_query": "Transfer $500 to Alice",
+        "test_query": "Transfer $500 to Bob",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 0.8903,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0098,
+        "contradiction_prob": 0.7944,
+        "rejection_reason": "entity_mismatch(['bob'] != ['alice'])",
+        "latency_ms": 0.365
+      },
+      {
+        "category": "entity_role_swap",
+        "seed_query": "How do I enable CORS in FastAPI?",
+        "test_query": "How do I enable CORS in Flask?",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 0.8935,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0098,
+        "contradiction_prob": 0.7944,
+        "rejection_reason": "entity_mismatch(['cors', 'flask'] != ['cors', 'fastapi'])",
+        "latency_ms": 0.36
+      },
+      {
+        "category": "entity_role_swap",
+        "seed_query": "How do I enable CORS in FastAPI?",
+        "test_query": "How do I enable CSRF in FastAPI?",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 0.6992,
+        "vanilla_cosine_hit": false,
+        "veriroute_nli_hit": false,
+        "nli_label": "SKIPPED",
+        "entailment_prob": 0.0,
+        "contradiction_prob": 0.0,
+        "rejection_reason": null,
+        "latency_ms": 0.046
+      },
+      {
+        "category": "entity_role_swap",
+        "seed_query": "Transfer funds from checking to savings",
+        "test_query": "Transfer funds from savings to checking",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 1.0,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0036,
+        "contradiction_prob": 0.983,
+        "rejection_reason": "directional_role_swap(from=savings->to=checking vs from=checking->to=savings)",
+        "latency_ms": 0.439
+      },
+      {
+        "category": "entity_role_swap",
+        "seed_query": "Upload the backup archive to AWS",
+        "test_query": "Upload the backup archive to GCP",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": 0.8445,
+        "vanilla_cosine_hit": true,
+        "veriroute_nli_hit": false,
+        "nli_label": "CONTRADICTION",
+        "entailment_prob": 0.0098,
+        "contradiction_prob": 0.7944,
+        "rejection_reason": "entity_mismatch(['gcp'] != ['aws'])",
+        "latency_ms": 0.384
+      },
+      {
+        "category": "unrelated",
+        "seed_query": "How do I enable CORS in FastAPI?",
+        "test_query": "Prove that the halting problem is undecidable",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": -0.0722,
+        "vanilla_cosine_hit": false,
+        "veriroute_nli_hit": false,
+        "nli_label": "SKIPPED",
+        "entailment_prob": 0.0,
+        "contradiction_prob": 0.0,
+        "rejection_reason": null,
+        "latency_ms": 0.079
+      },
+      {
+        "category": "unrelated",
+        "seed_query": "Transfer $500 to Alice",
+        "test_query": "Design a multi-region Kafka replication architecture",
+        "ground_truth_should_hit": false,
+        "cosine_similarity": -0.0164,
+        "vanilla_cosine_hit": false,
+        "veriroute_nli_hit": false,
+        "nli_label": "SKIPPED",
+        "entailment_prob": 0.0,
+        "contradiction_prob": 0.0,
+        "rejection_reason": null,
+        "latency_ms": 0.097
+      }
+    ]
+  },
+  "bandit_benchmark": {
+    "num_requests_evaluated": 96,
+    "policies": {
+      "always_frontier": {
+        "total_cost_usd": 0.07758,
+        "cost_savings_vs_frontier_pct": 0.0,
+        "avg_quality_score": 0.9776,
+        "quality_parity_vs_frontier_pct": 100.0,
+        "avg_ttft_ms": 264.23,
+        "arm_distribution": {
+          "claude-3-5-sonnet": 96
+        }
+      },
+      "always_small": {
+        "total_cost_usd": 0.00046,
+        "cost_savings_vs_frontier_pct": 99.41,
+        "avg_quality_score": 0.79,
+        "quality_parity_vs_frontier_pct": 80.81,
+        "avg_ttft_ms": 42.68,
+        "arm_distribution": {
+          "llama-3.1-8b-instant": 96
+        }
+      },
+      "static_length_rule": {
+        "total_cost_usd": 0.00947,
+        "cost_savings_vs_frontier_pct": 87.8,
+        "avg_quality_score": 0.9214,
+        "quality_parity_vs_frontier_pct": 94.25,
+        "avg_ttft_ms": 126.11,
+        "arm_distribution": {
+          "gpt-4o-mini": 90,
+          "claude-3-5-sonnet": 6
+        }
+      },
+      "veriroute_linucb_bandit": {
+        "total_cost_usd": 0.01977,
+        "cost_savings_vs_frontier_pct": 74.52,
+        "avg_quality_score": 0.93,
+        "quality_parity_vs_frontier_pct": 95.13,
+        "avg_ttft_ms": 115.08,
+        "arm_distribution": {
+          "llama-3.1-8b-instant": 32,
+          "gpt-4o-mini": 49,
+          "claude-3-5-sonnet": 15
+        }
+      }
+    },
+    "learned_bandit_state": {
+      "algorithm": "Disjoint LinUCB (Linear Upper Confidence Bound)",
+      "alpha": 0.8,
+      "latency_penalty_weight": 0.12,
+      "total_decisions": 96,
+      "arms": {
+        "llama-3.1-8b-instant": {
+          "display_name": "Llama-3.1-8B-Instant (Groq/Local)",
+          "tier": "fast",
+          "pulls": 32,
+          "avg_reward": 0.9556,
+          "avg_quality": 0.9457,
+          "total_cost_usd": 0.000114,
+          "ema_ttft_ms": 42.98,
+          "learned_theta": {
+            "bias": 0.6659,
+            "simplicity_signal": 0.6082,
+            "length_log_norm": 0.2159,
+            "code_density": -0.0324,
+            "reasoning_math_depth": -0.0716,
+            "systems_arch_depth": -0.0632,
+            "strict_constraint_signal": -0.0337,
+            "conversation_depth": -0.024
+          }
+        },
+        "gpt-4o-mini": {
+          "display_name": "GPT-4o-Mini (Balanced)",
+          "tier": "balanced",
+          "pulls": 49,
+          "avg_reward": 0.9057,
+          "avg_quality": 0.9123,
+          "total_cost_usd": 0.001568,
+          "ema_ttft_ms": 116.51,
+          "learned_theta": {
+            "bias": 0.8218,
+            "simplicity_signal": 0.3652,
+            "length_log_norm": 0.3485,
+            "code_density": 0.1777,
+            "reasoning_math_depth": -0.0022,
+            "systems_arch_depth": 0.1481,
+            "strict_constraint_signal": 0.0059,
+            "conversation_depth": -0.0296
+          }
+        },
+        "claude-3-5-sonnet": {
+          "display_name": "Claude-3.5-Sonnet / GPT-4o (Frontier)",
+          "tier": "frontier",
+          "pulls": 15,
+          "avg_reward": 0.6884,
+          "avg_quality": 0.954,
+          "total_cost_usd": 0.018087,
+          "ema_ttft_ms": 263.2,
+          "learned_theta": {
+            "bias": 0.5593,
+            "simplicity_signal": 0.1682,
+            "length_log_norm": 0.2724,
+            "code_density": 0.167,
+            "reasoning_math_depth": 0.2942,
+            "systems_arch_depth": 0.2266,
+            "strict_constraint_signal": 0.1145,
+            "conversation_depth": 0.0923
+          }
+        }
+      },
+      "recent_updates": [
+        {
+          "timestamp": 1792282278.8004467,
+          "arm_id": "llama-3.1-8b-instant",
+          "quality_score": 0.956,
+          "composite_reward": 0.9634,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8004467,
+          "arm_id": "llama-3.1-8b-instant",
+          "quality_score": 0.918,
+          "composite_reward": 0.9351,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8004467,
+          "arm_id": "gpt-4o-mini",
+          "quality_score": 0.978,
+          "composite_reward": 0.966,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8004467,
+          "arm_id": "gpt-4o-mini",
+          "quality_score": 0.978,
+          "composite_reward": 0.9661,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8004467,
+          "arm_id": "llama-3.1-8b-instant",
+          "quality_score": 0.964,
+          "composite_reward": 0.9692,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8014467,
+          "arm_id": "llama-3.1-8b-instant",
+          "quality_score": 0.948,
+          "composite_reward": 0.9571,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8014467,
+          "arm_id": "llama-3.1-8b-instant",
+          "quality_score": 0.916,
+          "composite_reward": 0.9335,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8014467,
+          "arm_id": "gpt-4o-mini",
+          "quality_score": 0.944,
+          "composite_reward": 0.9399,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8014467,
+          "arm_id": "gpt-4o-mini",
+          "quality_score": 0.986,
+          "composite_reward": 0.9711,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8014467,
+          "arm_id": "gpt-4o-mini",
+          "quality_score": 0.904,
+          "composite_reward": 0.9107,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8014467,
+          "arm_id": "gpt-4o-mini",
+          "quality_score": 0.944,
+          "composite_reward": 0.9402,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8024468,
+          "arm_id": "claude-3-5-sonnet",
+          "quality_score": 0.934,
+          "composite_reward": 0.6735,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8024468,
+          "arm_id": "gpt-4o-mini",
+          "quality_score": 0.788,
+          "composite_reward": 0.8252,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8024468,
+          "arm_id": "claude-3-5-sonnet",
+          "quality_score": 0.958,
+          "composite_reward": 0.6912,
+          "signal_source": "online_eval"
+        },
+        {
+          "timestamp": 1792282278.8024468,
+          "arm_id": "gpt-4o-mini",
+          "quality_score": 0.724,
+          "composite_reward": 0.7021,
+          "signal_source": "online_eval"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VeriRoute — Entailment-Verified LLM Gateway & LinUCB Bandit Router</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #e2e8f0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .card {
+      background: rgba(17, 24, 39, 0.88);
+      border: 1px solid rgba(51, 65, 85, 0.65);
+      border-radius: 0.75rem;
+    }
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      color: #ffffff;
+      border-color: #60a5fa;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-16">
+  <!-- Top Header -->
+  <header class="border-b border-slate-800 bg-slate-950/90 sticky top-0 z-30 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-white text-lg shadow-lg">
+          VR
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-bold tracking-tight text-white">VeriRoute</h1>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-medium">
+              2-Stage NLI Cache + LinUCB Bandit
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">
+            Entailment-Verified Semantic LLM Gateway, Online Contextual Bandit Router &amp; Agent Loop Circuit Breaker
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="runSimulationBatch()" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition shadow">
+          ⚡ Simulate 32 Requests
+        </button>
+        <button onclick="resetGateway()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700 transition">
+          Reset State
+        </button>
+        <a href="/docs" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-blue-400 border border-slate-700 transition">
+          OpenAPI / Swagger ↗
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 pt-6 space-y-6">
+    <!-- KPI Telemetry Strip -->
+    <section class="grid grid-cols-2 md:grid-cols-6 gap-3">
+      <div class="card p-4">
+        <div class="text-xs text-slate-400">Total Requests</div>
+        <div id="kpi-requests" class="text-2xl font-bold text-white mt-1 mono">0</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">OpenAI-compatible API</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-xs text-slate-400">Cost Savings vs Frontier</div>
+        <div id="kpi-savings-pct" class="text-2xl font-bold text-emerald-400 mt-1 mono">0.0%</div>
+        <div id="kpi-savings-usd" class="text-[11px] text-slate-400 mt-0.5 mono">$0.0000 saved</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-xs text-slate-400">Verified Cache Hit Rate</div>
+        <div id="kpi-cache-rate" class="text-2xl font-bold text-cyan-400 mt-1 mono">0.0%</div>
+        <div id="kpi-cache-entries" class="text-[11px] text-slate-400 mt-0.5">0 active entries</div>
+      </div>
+      <div class="card p-4 border-amber-500/30">
+        <div class="text-xs text-amber-300">Adversarial FPs Blocked</div>
+        <div id="kpi-fp-blocked" class="text-2xl font-bold text-amber-400 mt-1 mono">0</div>
+        <div class="text-[11px] text-slate-400 mt-0.5">Caught by Stage-2 NLI</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-xs text-slate-400">Gateway Overhead (P95)</div>
+        <div id="kpi-overhead" class="text-2xl font-bold text-indigo-400 mt-1 mono">0.0 ms</div>
+        <div class="text-[11px] text-slate-400 mt-0.5">Cache + Bandit math</div>
+      </div>
+      <div class="card p-4">
+        <div class="text-xs text-slate-400">Agent Loops Broken</div>
+        <div id="kpi-loops" class="text-2xl font-bold text-rose-400 mt-1 mono">0</div>
+        <div class="text-[11px] text-slate-400 mt-0.5">Stateful circuit breaker</div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
+      <button onclick="switchTab('tab-cache')" id="btn-tab-cache" class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium border border-slate-700 bg-slate-900 text-slate-300 transition">
+        1. Adversarial NLI Cache Lab (Stage 1 vs Stage 2)
+      </button>
+      <button onclick="switchTab('tab-gateway')" id="btn-tab-gateway" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium border border-slate-700 bg-slate-900 text-slate-300 transition">
+        2. Live Gateway &amp; LinUCB Router Inspector
+      </button>
+      <button onclick="switchTab('tab-bandit')" id="btn-tab-bandit" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium border border-slate-700 bg-slate-900 text-slate-300 transition">
+        3. Bandit Matrix State &amp; Agent Loop Breaker
+      </button>
+      <button onclick="switchTab('tab-benchmarks')" id="btn-tab-benchmarks" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium border border-slate-700 bg-slate-900 text-slate-300 transition">
+        4. Automated Evaluation Benchmark Suite
+      </button>
+    </div>
+
+    <!-- TAB 1: ADVERSARIAL NLI CACHE LAB -->
+    <section id="tab-cache" class="space-y-6">
+      <div class="card p-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-white">Why Standard Semantic Caches Fail — Live Side-by-Side Comparison</h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Standard cosine-similarity caches (e.g. vanilla GPTCache) return catastrophic false positives on negations, antonym flips, number changes, and entity swaps because they share &gt;88% topical embedding overlap.
+            </p>
+          </div>
+        </div>
+
+        <!-- Preset Trap Buttons -->
+        <div class="mb-5">
+          <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">1-Click Interview Demo Presets:</div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="loadCachePreset('How do I enable CORS in FastAPI?', 'How do I disable CORS in FastAPI?')" class="px-3 py-1.5 rounded-md bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-xs text-rose-300 font-medium">
+              ❌ Antonym Trap: Enable vs Disable CORS
+            </button>
+            <button onclick="loadCachePreset('Transfer $500 to Alice', 'Transfer $500 to Bob')" class="px-3 py-1.5 rounded-md bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-xs text-rose-300 font-medium">
+              ❌ Entity Trap: Alice vs Bob ($500)
+            </button>
+            <button onclick="loadCachePreset('Transfer $500 to Alice', 'Transfer $5000 to Alice')" class="px-3 py-1.5 rounded-md bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-xs text-rose-300 font-medium">
+              ❌ Number Trap: $500 vs $5000
+            </button>
+            <button onclick="loadCachePreset('Transfer funds from checking to savings', 'Transfer funds from savings to checking')" class="px-3 py-1.5 rounded-md bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-xs text-rose-300 font-medium">
+              ❌ Role Reversal: Checking→Savings vs Savings→Checking
+            </button>
+            <button onclick="loadCachePreset('How do I enable CORS in FastAPI?', 'What is the way to turn on cross-origin in FastAPI?')" class="px-3 py-1.5 rounded-md bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-xs text-emerald-300 font-medium">
+              ✅ Safe Paraphrase: Enable vs Turn On Cross-Origin
+            </button>
+            <button onclick="loadCachePreset('Transfer $500 to Alice', 'Please wire $500 to Alice')" class="px-3 py-1.5 rounded-md bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-xs text-emerald-300 font-medium">
+              ✅ Safe Paraphrase: Transfer vs Wire $500
+            </button>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Cached Seed Query (Stored in Cache)</label>
+            <input id="cache-seed-input" type="text" value="How do I enable CORS in FastAPI?" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-sm text-white focus:border-blue-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Incoming User Query (To Verify)</label>
+            <input id="cache-test-input" type="text" value="How do I disable CORS in FastAPI?" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-sm text-white focus:border-blue-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <button onclick="compareCachePair()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm font-semibold text-white transition shadow">
+          Run Two-Stage Cache Verification
+        </button>
+
+        <!-- Side by Side Result Cards -->
+        <div id="cache-compare-output" class="grid md:grid-cols-2 gap-4 mt-6 hidden">
+          <div class="p-5 rounded-xl bg-slate-950 border border-slate-800">
+            <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Baseline: Vanilla Cosine Cache (Stage-1 Only)</div>
+            <div id="vanilla-verdict-badge" class="mt-2 inline-block px-3 py-1 rounded-md text-sm font-bold"></div>
+            <div class="mt-3 space-y-1.5 text-xs text-slate-300 mono">
+              <div>Bi-Encoder Cosine Similarity: <span id="cmp-cosine" class="font-bold text-white"></span></div>
+              <div>Cosine Hit Threshold: <span id="cmp-threshold" class="text-slate-400"></span></div>
+              <p id="vanilla-explanation" class="text-slate-400 font-sans pt-2"></p>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-xl bg-slate-950 border border-blue-500/40">
+            <div class="text-xs uppercase tracking-wider text-blue-400 font-semibold">VeriRoute: 2-Stage Entailment Cache (Bi-Encoder + NLI Guard)</div>
+            <div id="veriroute-verdict-badge" class="mt-2 inline-block px-3 py-1 rounded-md text-sm font-bold"></div>
+            <div class="mt-3 space-y-1.5 text-xs text-slate-300 mono">
+              <div>NLI Cross-Encoder Label: <span id="cmp-nli-label" class="font-bold"></span></div>
+              <div>P(Entailment): <span id="cmp-ent" class="text-emerald-400"></span> | P(Contradiction): <span id="cmp-con" class="text-rose-400"></span></div>
+              <div>Hard Constraints: <span id="cmp-constraints" class="text-amber-300"></span></div>
+              <div>Stage-1 + Stage-2 Latency: <span id="cmp-latency" class="text-indigo-300"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: LIVE GATEWAY & LINUCB ROUTER INSPECTOR -->
+    <section id="tab-gateway" class="space-y-6 hidden">
+      <div class="grid lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-6 card p-6 space-y-4">
+          <h2 class="text-lg font-bold text-white">OpenAI-Compatible Gateway (`/v1/chat/completions`)</h2>
+          <p class="text-xs text-slate-400">
+            Test how VeriRoute extracts an 8D context vector $\mathbf{x}_t$ and uses Disjoint LinUCB to balance quality, token cost, and live TTFT latency.
+          </p>
+
+          <div class="space-y-2">
+            <div class="text-xs font-semibold text-slate-400">Sample Prompts by Complexity Tier:</div>
+            <div class="flex flex-wrap gap-1.5">
+              <button onclick="setGatewayPrompt('What does HTTP stand for? Explain in one sentence.')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-cyan-300">
+                [Easy QA] HTTP Definition
+              </button>
+              <button onclick="setGatewayPrompt('Write a Python function `def reverse_words(s: str)` that reverses words in a string.')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-blue-300">
+                [Medium Code] Reverse Words Function
+              </button>
+              <button onclick="setGatewayPrompt('Design a multi-region active-active distributed consensus architecture using Raft and Paxos with sharding, vector clocks, idempotency, backpressure, and CAP theorem trade-offs.')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-purple-300">
+                [Hard Systems] Multi-Region Raft/CAP Architecture
+              </button>
+              <button onclick="setGatewayPrompt('Prove by strong induction and derive the exact amortized time complexity O(n log n) for a self-balancing tree with dynamic programming state transitions and formal invariant verification.')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-amber-300">
+                [Hard Math/Proof] Formal Induction &amp; Amortized Proof
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">User Prompt</label>
+            <textarea id="gw-prompt" rows="4" class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-sm text-white focus:border-blue-500 focus:outline-none">Design a multi-region active-active distributed consensus architecture using Raft and Paxos with sharding, vector clocks, idempotency, backpressure, and CAP theorem trade-offs.</textarea>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4">
+            <label class="flex items-center gap-2 text-xs text-slate-300">
+              <input id="gw-bypass-cache" type="checkbox" class="rounded bg-slate-900 border-slate-700" />
+              Bypass Semantic Cache
+            </label>
+            <button onclick="sendGatewayRequest()" class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm font-semibold text-white transition shadow">
+              Send Request via Gateway
+            </button>
+          </div>
+
+          <div id="gw-response-box" class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200 whitespace-pre-wrap mono hidden"></div>
+
+          <!-- Explicit Bandit Feedback Bar -->
+          <div id="gw-feedback-bar" class="pt-3 border-t border-slate-800 flex items-center justify-between hidden">
+            <span class="text-xs text-slate-400">Send Online Reward Feedback to LinUCB Arm:</span>
+            <div class="flex gap-2">
+              <button onclick="sendFeedback(0.98)" class="px-3 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-xs text-emerald-300">
+                👍 High Quality (r=0.98)
+              </button>
+              <button onclick="sendFeedback(0.20)" class="px-3 py-1 rounded bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-xs text-rose-300">
+                👎 Hallucinated / Poor (r=0.20)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Telemetry Waterfall -->
+        <div class="lg:col-span-6 card p-6 space-y-4">
+          <h3 class="text-base font-bold text-white">Real-Time Gateway Decision Telemetry</h3>
+          <div id="gw-telemetry-empty" class="text-xs text-slate-500 py-12 text-center">
+            Send a request on the left to inspect Stage-1/2 NLI Cache &amp; LinUCB UCB scores.
+          </div>
+          <div id="gw-telemetry-content" class="space-y-4 hidden text-xs">
+            <div class="grid grid-cols-3 gap-2">
+              <div class="p-3 rounded-lg bg-slate-950 border border-slate-800">
+                <div class="text-slate-400">Selected Model</div>
+                <div id="tel-model" class="font-bold text-blue-400 mt-1 mono"></div>
+              </div>
+              <div class="p-3 rounded-lg bg-slate-950 border border-slate-800">
+                <div class="text-slate-400">Detected Domain / Complexity</div>
+                <div id="tel-domain" class="font-bold text-white mt-1 mono"></div>
+              </div>
+              <div class="p-3 rounded-lg bg-slate-950 border border-slate-800">
+                <div class="text-slate-400">Cost vs Frontier</div>
+                <div id="tel-cost" class="font-bold text-emerald-400 mt-1 mono"></div>
+              </div>
+            </div>
+
+            <div class="p-3.5 rounded-lg bg-slate-950 border border-slate-800">
+              <div class="font-semibold text-slate-300 mb-2">LinUCB Arm Evaluation ($\text{UCB}_a = \hat{\theta}_a^\top x_t + \alpha \sqrt{x_t^\top A_a^{-1} x_t} - \lambda \cdot \text{TTFT}_a$)</div>
+              <div id="tel-arms-table" class="space-y-2 mono"></div>
+            </div>
+
+            <div class="p-3.5 rounded-lg bg-slate-950 border border-slate-800">
+              <div class="font-semibold text-slate-300 mb-1">Stage-1 &amp; Stage-2 Cache Inspection</div>
+              <div id="tel-cache-info" class="mono text-slate-300"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: BANDIT MATRIX & AGENT LOOP CIRCUIT BREAKER -->
+    <section id="tab-bandit" class="space-y-6 hidden">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="card p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-lg font-bold text-white">Stateful Agent Loop Circuit Breaker</h2>
+              <p class="text-xs text-slate-400">
+                Detects when multi-step tool-calling agents get stuck repeating identical/near-identical tool calls and automatically intervenes + escalates to Frontier.
+              </p>
+            </div>
+            <button onclick="triggerStuckAgentLoop()" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white transition shadow shrink-0">
+              🔥 Simulate Stuck Agent Loop
+            </button>
+          </div>
+          <div id="loop-demo-output" class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs mono text-slate-300 whitespace-pre-wrap">
+Click "Simulate Stuck Agent Loop" to send a multi-turn trajectory where an agent calls `search_codebase({"query": "auth_middleware"})` 3 times in a row.
+          </div>
+        </div>
+
+        <div class="card p-6 space-y-4">
+          <h2 class="text-lg font-bold text-white">Learned LinUCB Parameter Vectors ($\hat{\theta}_a = A_a^{-1} b_a$)</h2>
+          <p class="text-xs text-slate-400">
+            Live ridge regression weights per arm stored in SQLite (`veriroute_state.db`).
+          </p>
+          <div id="bandit-arms-cards" class="space-y-3 text-xs mono"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: AUTOMATED EVALUATION BENCHMARK SUITE -->
+    <section id="tab-benchmarks" class="space-y-6 hidden">
+      <div class="card p-6 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-white">Automated Evaluation Suite (27 Adversarial Cache Pairs + 96 Bandit Workloads)</h2>
+            <p class="text-xs text-slate-400">
+              Produces hard metrics for your resume and live technical interviews.
+            </p>
+          </div>
+          <button onclick="runFullBenchmarkSuite()" id="btn-run-bench" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold text-white transition shadow">
+            ▶ Run Full Benchmark Suite Now
+          </button>
+        </div>
+
+        <div id="bench-output" class="space-y-6 hidden">
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="p-5 rounded-xl bg-slate-950 border border-slate-800">
+              <h3 class="text-sm font-bold text-cyan-400 mb-3">Benchmark 1: Adversarial Semantic Cache Verification</h3>
+              <div id="bench-cache-summary" class="space-y-2 text-xs mono"></div>
+            </div>
+            <div class="p-5 rounded-xl bg-slate-950 border border-slate-800">
+              <h3 class="text-sm font-bold text-emerald-400 mb-3">Benchmark 2: Contextual Bandit Pareto Frontier (96 Requests)</h3>
+              <div id="bench-bandit-summary" class="space-y-2 text-xs mono"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let lastGatewayArm = null;
+    let lastGatewayPrompt = null;
+
+    function switchTab(tabId) {
+      ['tab-cache', 'tab-gateway', 'tab-bandit', 'tab-benchmarks'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+        document.getElementById('btn-' + id).classList.remove('active');
+      });
+      document.getElementById(tabId).classList.remove('hidden');
+      document.getElementById('btn-' + tabId).classList.add('active');
+      refreshStats();
+    }
+
+    async function refreshStats() {
+      try {
+        const res = await fetch('/api/v1/stats');
+        const data = await res.json();
+        const m = data.metrics;
+        document.getElementById('kpi-requests').textContent = m.total_requests;
+        document.getElementById('kpi-savings-pct').textContent = m.cost_savings_pct.toFixed(1) + '%';
+        document.getElementById('kpi-savings-usd').textContent = '$' + m.total_cost_saved_usd.toFixed(5) + ' saved';
+        document.getElementById('kpi-cache-rate').textContent = m.cache_hit_rate_pct.toFixed(1) + '%';
+        document.getElementById('kpi-cache-entries').textContent = data.cache.entries_count + ' active entries';
+        document.getElementById('kpi-fp-blocked').textContent = data.cache.false_positives_blocked;
+        document.getElementById('kpi-overhead').textContent = m.gateway_overhead_p95_ms.toFixed(2) + ' ms';
+        document.getElementById('kpi-loops').textContent = data.loop_breaker.total_loops_broken;
+
+        // Render Bandit Arms in Tab 3
+        const armsContainer = document.getElementById('bandit-arms-cards');
+        armsContainer.innerHTML = '';
+        Object.entries(data.bandit.arms).forEach(([armId, info]) => {
+          const card = document.createElement('div');
+          card.className = 'p-3.5 rounded-lg bg-slate-950 border border-slate-800';
+          card.innerHTML = `
+            <div class="flex justify-between items-center mb-1.5">
+              <span class="font-bold text-blue-400">${info.display_name}</span>
+              <span class="text-slate-400">Pulls: <strong class="text-white">${info.pulls}</strong> | Avg Reward: <strong class="text-emerald-400">${info.avg_reward}</strong> | TTFT: ${info.ema_ttft_ms}ms</span>
+            </div>
+            <div class="text-[11px] text-slate-400">Learned θ̂: ${JSON.stringify(info.learned_theta)}</div>
+          `;
+          armsContainer.appendChild(card);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function loadCachePreset(seed, test) {
+      document.getElementById('cache-seed-input').value = seed;
+      document.getElementById('cache-test-input').value = test;
+      compareCachePair();
+    }
+
+    async function compareCachePair() {
+      const seed_query = document.getElementById('cache-seed-input').value;
+      const test_query = document.getElementById('cache-test-input').value;
+      const res = await fetch('/api/v1/cache/compare', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({seed_query, test_query})
+      });
+      const data = await res.json();
+      document.getElementById('cache-compare-output').classList.remove('hidden');
+
+      document.getElementById('cmp-cosine').textContent = data.cosine_similarity.toFixed(4);
+      document.getElementById('cmp-threshold').textContent = data.cosine_threshold;
+
+      const vBadge = document.getElementById('vanilla-verdict-badge');
+      const vExp = document.getElementById('vanilla-explanation');
+      const vr = data.veriroute_two_stage_cache;
+
+      if (data.vanilla_cosine_cache.would_hit && vr.false_positive_prevented) {
+        vBadge.className = 'mt-2 inline-block px-3 py-1 rounded-md text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40';
+        vBadge.textContent = '❌ FALSE POSITIVE CACHE HIT (Serves Wrong Cached Answer!)';
+        vExp.textContent = 'Vanilla cosine similarity exceeds threshold (' + data.cosine_similarity.toFixed(3) + ' >= ' + data.cosine_threshold + '), so a standard vector cache blindly returns the cached response despite the opposite meaning!';
+      } else if (data.vanilla_cosine_cache.would_hit) {
+        vBadge.className = 'mt-2 inline-block px-3 py-1 rounded-md text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+        vBadge.textContent = '✅ CACHE HIT';
+        vExp.textContent = 'Cosine similarity passed threshold.';
+      } else {
+        vBadge.className = 'mt-2 inline-block px-3 py-1 rounded-md text-xs font-bold bg-slate-800 text-slate-300';
+        vBadge.textContent = 'CACHE MISS';
+        vExp.textContent = 'Below Stage-1 cosine threshold.';
+      }
+
+      const vrBadge = document.getElementById('veriroute-verdict-badge');
+      if (vr.cache_hit) {
+        vrBadge.className = 'mt-2 inline-block px-3 py-1 rounded-md text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+        vrBadge.textContent = '✅ VERIFIED SAFE CACHE HIT (Entailment Confirmed)';
+      } else if (vr.false_positive_prevented) {
+        vrBadge.className = 'mt-2 inline-block px-3 py-1 rounded-md text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40';
+        vrBadge.textContent = '🛡️ BLOCKED FALSE POSITIVE (Caught by Stage-2 NLI Guard!)';
+      } else {
+        vrBadge.className = 'mt-2 inline-block px-3 py-1 rounded-md text-xs font-bold bg-slate-800 text-slate-300';
+        vrBadge.textContent = 'CACHE MISS';
+      }
+
+      if (vr.stage2_nli) {
+        document.getElementById('cmp-nli-label').textContent = vr.stage2_nli.label;
+        document.getElementById('cmp-ent').textContent = (vr.stage2_nli.entailment_prob * 100).toFixed(1) + '%';
+        document.getElementById('cmp-con').textContent = (vr.stage2_nli.contradiction_prob * 100).toFixed(1) + '%';
+        document.getElementById('cmp-constraints').textContent = vr.stage2_nli.constraint_report.rejection_reason || 'All Hard Constraints Passed (Numbers, Entities, Polarity)';
+        document.getElementById('cmp-latency').textContent = (vr.stage1_latency_ms + vr.stage2_nli.inference_time_ms).toFixed(2) + ' ms';
+      } else {
+        document.getElementById('cmp-nli-label').textContent = 'SKIPPED (Fast Stage-1 Reject)';
+        document.getElementById('cmp-ent').textContent = '-';
+        document.getElementById('cmp-con').textContent = '-';
+        document.getElementById('cmp-constraints').textContent = '-';
+        document.getElementById('cmp-latency').textContent = vr.stage1_latency_ms.toFixed(2) + ' ms';
+      }
+      refreshStats();
+    }
+
+    function setGatewayPrompt(text) {
+      document.getElementById('gw-prompt').value = text;
+    }
+
+    async function sendGatewayRequest() {
+      const prompt = document.getElementById('gw-prompt').value;
+      const bypass_cache = document.getElementById('gw-bypass-cache').checked;
+      const res = await fetch('/v1/chat/completions', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          model: 'auto',
+          messages: [{role: 'user', content: prompt}],
+          bypass_cache
+        })
+      });
+      const data = await res.json();
+      const vr = data.veriroute;
+      lastGatewayArm = vr.router.selected_model;
+      lastGatewayPrompt = prompt;
+
+      const respBox = document.getElementById('gw-response-box');
+      respBox.classList.remove('hidden');
+      respBox.textContent = data.choices[0].message.content;
+
+      document.getElementById('gw-feedback-bar').classList.remove('hidden');
+      document.getElementById('gw-telemetry-empty').classList.add('hidden');
+      document.getElementById('gw-telemetry-content').classList.remove('hidden');
+
+      document.getElementById('tel-model').textContent = `${vr.router.selected_model} (${vr.router.routing_policy})`;
+      document.getElementById('tel-domain').textContent = `${vr.router.detected_domain} (score: ${vr.router.complexity_score})`;
+      document.getElementById('tel-cost').textContent = `$${vr.cost_usd.toFixed(6)} (Saved $${vr.cost_saved_usd.toFixed(6)})`;
+
+      const armsDiv = document.getElementById('tel-arms-table');
+      armsDiv.innerHTML = '';
+      if (vr.router.arm_scores && vr.router.arm_scores.length > 0) {
+        vr.router.arm_scores.forEach(a => {
+          const isChosen = a.arm_id === vr.router.selected_model;
+          const row = document.createElement('div');
+          row.className = `p-2 rounded border ${isChosen ? 'border-blue-500/60 bg-blue-500/10' : 'border-slate-800 bg-slate-900/50'} flex justify-between`;
+          row.innerHTML = `
+            <span class="${isChosen ? 'font-bold text-blue-300' : 'text-slate-300'}">${isChosen ? '▶ ' : ''}${a.arm_id}</span>
+            <span>UCB: <strong class="text-white">${a.ucb_score}</strong> (E[r]=${a.expected_reward} + Bonus=${a.uncertainty_bonus} - LatPen=${a.latency_penalty})</span>
+          `;
+          armsDiv.appendChild(row);
+        });
+      } else {
+        armsDiv.innerHTML = '<div class="text-emerald-400">Served directly from Entailment-Verified Semantic Cache ($0 token cost!)</div>';
+      }
+
+      document.getElementById('tel-cache-info').textContent =
+        `Cache Hit: ${vr.cache.cache_hit} | Top Cosine Sim: ${vr.cache.top_cosine_similarity} | Reason: ${vr.cache.decision_reason}`;
+
+      refreshStats();
+    }
+
+    async function sendFeedback(qualityScore) {
+      if (!lastGatewayArm || !lastGatewayPrompt) return;
+      await fetch('/api/v1/feedback', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          arm_id: lastGatewayArm,
+          prompt: lastGatewayPrompt,
+          quality_score: qualityScore,
+          signal_source: 'explicit_user'
+        })
+      });
+      refreshStats();
+    }
+
+    async function runSimulationBatch() {
+      await fetch('/api/v1/bandit/simulate?rounds=32', {method: 'POST'});
+      refreshStats();
+    }
+
+    async function triggerStuckAgentLoop() {
+      const stuckMessages = [
+        {role: 'user', content: 'Fix the authentication bug in auth_middleware.py'},
+        {role: 'assistant', content: '', tool_calls: [{id: 'call_1', type: 'function', function: {name: 'search_codebase', arguments: '{"query": "auth_middleware"}'}}]},
+        {role: 'assistant', content: '', tool_calls: [{id: 'call_2', type: 'function', function: {name: 'search_codebase', arguments: '{"query": "auth_middleware"}'}}]},
+        {role: 'assistant', content: '', tool_calls: [{id: 'call_3', type: 'function', function: {name: 'search_codebase', arguments: '{"query": "auth_middleware"}'}}]},
+        {role: 'user', content: 'Continue debugging auth_middleware.py'}
+      ];
+      const res = await fetch('/v1/chat/completions', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          model: 'auto',
+          session_id: 'demo_agent_trace_01',
+          messages: stuckMessages
+        })
+      });
+      const data = await res.json();
+      document.getElementById('loop-demo-output').textContent =
+        `Circuit Breaker Status: ${JSON.stringify(data.veriroute.loop_guard, null, 2)}\n\n` +
+        `Escalated Model: ${data.veriroute.router.selected_model} (${data.veriroute.router.routing_policy})\n\n` +
+        `Response:\n${data.choices[0].message.content}`;
+      refreshStats();
+    }
+
+    async function runFullBenchmarkSuite() {
+      const btn = document.getElementById('btn-run-bench');
+      btn.textContent = 'Running 27 Cache Pairs + 96 Bandit Workloads...';
+      btn.disabled = true;
+      const res = await fetch('/api/v1/benchmarks/run');
+      const data = await res.json();
+      btn.textContent = '▶ Run Full Benchmark Suite Now';
+      btn.disabled = false;
+
+      document.getElementById('bench-output').classList.remove('hidden');
+      const cb = data.cache_benchmark;
+      document.getElementById('bench-cache-summary').innerHTML = `
+        <div class="p-2.5 rounded bg-slate-900 border border-slate-800 flex justify-between">
+          <span>Vanilla Cosine Cache False Positive Rate:</span>
+          <strong class="text-rose-400">${cb.vanilla_cosine_cache.false_positive_rate_pct}% (${cb.vanilla_cosine_cache.false_positives}/${cb.adversarial_negative_pairs} traps failed)</strong>
+        </div>
+        <div class="p-2.5 rounded bg-emerald-500/10 border border-emerald-500/30 flex justify-between">
+          <span>VeriRoute 2-Stage NLI Cache False Positive Rate:</span>
+          <strong class="text-emerald-400">${cb.veriroute_nli_cache.false_positive_rate_pct}% (${cb.veriroute_nli_cache.false_positives}/${cb.adversarial_negative_pairs} traps failed)</strong>
+        </div>
+        <div class="p-2.5 rounded bg-slate-900 border border-slate-800 flex justify-between">
+          <span>VeriRoute Precision / Paraphrase Recall:</span>
+          <strong class="text-cyan-400">${cb.veriroute_nli_cache.precision_pct}% Precision / ${cb.veriroute_nli_cache.recall_pct}% Recall</strong>
+        </div>
+        <div class="p-2.5 rounded bg-slate-900 border border-slate-800 flex justify-between">
+          <span>P95 Verification Latency Overhead:</span>
+          <strong class="text-indigo-400">${cb.veriroute_nli_cache.p95_latency_ms} ms</strong>
+        </div>
+      `;
+
+      const bb = data.bandit_benchmark.policies;
+      document.getElementById('bench-bandit-summary').innerHTML = Object.entries(bb).map(([k, v]) => `
+        <div class="p-2.5 rounded ${k === 'veriroute_linucb_bandit' ? 'bg-blue-500/15 border border-blue-500/40' : 'bg-slate-900 border border-slate-800'} flex justify-between">
+          <span class="font-semibold">${k}</span>
+          <span>Cost Savings: <strong class="text-emerald-400">${v.cost_savings_vs_frontier_pct}%</strong> | Quality Parity: <strong class="text-cyan-400">${v.quality_parity_vs_frontier_pct}%</strong> | TTFT: ${v.avg_ttft_ms}ms</span>
+        </div>
+      `).join('');
+      refreshStats();
+    }
+
+    async function resetGateway() {
+      await fetch('/api/v1/reset?warm_start=true', {method: 'POST'});
+      refreshStats();
+    }
+
+    // Initial load
+    compareCachePair();
+    refreshStats();
+  </script>
+</body>
+</html>
